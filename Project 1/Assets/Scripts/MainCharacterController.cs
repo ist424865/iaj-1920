@@ -5,7 +5,6 @@ using System.Linq;
 using System.Collections.Generic;
 using Assets.Scripts.IAJ.Unity.Movement.DynamicMovement;
 using Assets.Scripts.IAJ.Unity.Movement.Arbitration;
-using System.Collections.Generic;
 using Assets.Scripts.IAJ.Unity.Movement.VO;
 using Assets.Scripts.IAJ.Unity.Movement;
 
@@ -16,16 +15,18 @@ public class MainCharacterController : MonoBehaviour {
     private const float MAX_ACCELERATION = 40.0f;
     private const float MAX_SPEED = 20.0f;
     private const float DRAG = 0.1f;
-    private const float MAX_LOOK_AHEAD = 8.0f;
+    private const float MAX_LOOK_AHEAD = 7.5f;
     private const float WHISKER_FACTOR = 2;
-    private const float MAX_TIME_LOOK_AHEAD = 5.0f;
+    private const float MAX_TIME_LOOK_AHEAD = 1.0f;
     private const float COLLISION_RADIUS = 2.0f;
     private const float AVOID_MARGIN = 10.0f;
-    private const float STOP_RADIUS = 2.5f;
-    private const float SLOW_RADIUS = 10.0f;
-    private const float WEIGHT_AVOID_OBSTACLE = 100f;
+    private const float STOP_RADIUS = 1.5f;
+    private const float SLOW_RADIUS = 12.0f;
+    private const float WEIGHT_AVOID_OBSTACLE = 70f;
     private const float WEIGHT_AVOID_CHARACTER = 30f;
-    private const float WEIGHT_PATROL = 10f;
+    private const float WEIGHT_PATROL = 20f;
+    private const int NUM_SAMPLES = 10;
+    private const float RVO_WEIGHT = 20;
 
 
     public KeyCode stopKey = KeyCode.S;
@@ -116,6 +117,8 @@ public class MainCharacterController : MonoBehaviour {
             Character = this.character.KinematicData,
             MaxAcceleration = MAX_ACCELERATION,
             MaxSpeed = MAX_SPEED,
+            NumSamples = NUM_SAMPLES,
+            AvoidanceWeight = RVO_WEIGHT
         };
 
         this.priorityMovement.Movements.Add(patrolMovement);

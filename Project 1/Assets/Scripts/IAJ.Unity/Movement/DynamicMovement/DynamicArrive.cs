@@ -22,7 +22,7 @@ namespace Assets.Scripts.IAJ.Unity.Movement.DynamicMovement {
             Vector3 direction = this.DestinationTarget.Position - this.Character.Position;
             float distance = direction.magnitude;
 
-            float desiredSpeed = 0;
+            float desiredSpeed;
 
             if (distance < this.StopRadius) {
                 desiredSpeed = 0;
