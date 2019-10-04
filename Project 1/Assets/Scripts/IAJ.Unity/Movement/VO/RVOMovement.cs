@@ -33,8 +33,10 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
             this.DesiredMovement = goalMovement;
             this.Characters = movingCharacters;
             this.Obstacles = obstacles;
-            this.IgnoreDistance = 10;
+            this.IgnoreDistance = 20.0f;
             this.CharacterSize = 1.0f;
+            this.NumSamples = 15;
+            this.AvoidanceWeight = 6.0f;
             base.Target = new KinematicData();
         }
 
@@ -53,12 +55,14 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
             }
 
             // 2 - generate samples
-            this.Samples = new List<Vector3>();
-            this.Samples.Add(desiredVelocity);
+            this.Samples = new List<Vector3>
+            {
+                desiredVelocity
+            };
             for (int i = 0; i < this.NumSamples; i++)
             {
-                float angle = Random.Range(0, MathConstants.MATH_2PI);
-                float magnitude = Random.Range(0, this.MaxSpeed);
+                float angle = Random.Range(0f, MathConstants.MATH_2PI);
+                float magnitude = Random.Range(this.MaxSpeed / 2, this.MaxSpeed);
                 Vector3 velocitySample = MathHelper.ConvertOrientationToVector(angle) * magnitude;
                 Samples.Add(velocitySample);
             }
@@ -73,33 +77,39 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
         {
             Vector3 bestSample = Vector3.zero;
             float minimumPenalty = Mathf.Infinity;
+            float timePenalty;
 
             foreach (var sample in this.Samples)
             {
                 float distancePenalty = (desiredVelocity - sample).magnitude;
                 float maximumTimePenalty = 0;
 
-                foreach (var target in this.Characters)
+                foreach (var otherCharacter in this.Characters)
                 {
-                    Vector3 deltaPos = target.Position - this.Character.Position;
+                    if (otherCharacter == this.Character) continue;
+
+                    Vector3 deltaPos = otherCharacter.Position - this.Character.Position;
                     if (deltaPos.magnitude > this.IgnoreDistance)
                         continue;
 
-                    Vector3 rayVector = 2 * sample - this.Character.velocity - target.velocity;
-                    float timeToCollision = MathHelper.TimeToCollisionBetweenRayAndCircle(this.Character.Position, rayVector, target.Position, 2 * this.CharacterSize);
+                    Vector3 rayVector = 2 * sample - this.Character.velocity - otherCharacter.velocity;
+                    float timeToCollision = MathHelper.TimeToCollisionBetweenRayAndCircle(this.Character.Position, rayVector, otherCharacter.Position, 2 * this.CharacterSize);
 
                     // no collision if not changed
-                    float timePenalty = 0;
 
                     // future collision
-                    if (timeToCollision > 0)
+                    if (timeToCollision > 0.001f)
                     {
                         timePenalty = this.AvoidanceWeight / timeToCollision;
                     }
                     // immediate collision
-                    else if (System.Math.Abs(timeToCollision) < Mathf.Epsilon)
+                    else if (System.Math.Abs(timeToCollision) < 0.001f)
                     {
                         timePenalty = Mathf.Infinity;
+                    }
+                    else
+                    {
+                        timePenalty = 0;
                     }
 
                     if (timePenalty > maximumTimePenalty)
@@ -117,6 +127,7 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
                     bestSample = sample;
                 }
             }
+            Debug.DrawLine(Character.Position, Character.Position + bestSample, Color.magenta);
             return bestSample;
         }
     }

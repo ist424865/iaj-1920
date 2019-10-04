@@ -25,8 +25,6 @@ public class MainCharacterController : MonoBehaviour {
     private const float WEIGHT_AVOID_OBSTACLE = 70f;
     private const float WEIGHT_AVOID_CHARACTER = 30f;
     private const float WEIGHT_PATROL = 20f;
-    private const int NUM_SAMPLES = 10;
-    private const float RVO_WEIGHT = 20;
 
 
     public KeyCode stopKey = KeyCode.S;
@@ -117,8 +115,6 @@ public class MainCharacterController : MonoBehaviour {
             Character = this.character.KinematicData,
             MaxAcceleration = MAX_ACCELERATION,
             MaxSpeed = MAX_SPEED,
-            NumSamples = NUM_SAMPLES,
-            AvoidanceWeight = RVO_WEIGHT
         };
 
         this.priorityMovement.Movements.Add(patrolMovement);
