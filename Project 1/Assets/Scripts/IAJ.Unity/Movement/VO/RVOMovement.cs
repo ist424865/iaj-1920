@@ -37,12 +37,12 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
             this.DesiredMovement = goalMovement;
             this.Characters = movingCharacters;
             this.Obstacles = obstacles;
-            this.IgnoreDistance = 20.0f;
-            this.CharacterSize = 0.5f;
+            this.IgnoreDistance = 7.9f;
+            this.CharacterSize = 1.2f;
             this.ObstacleSize = 1.6f;
-            this.NumSamples = 20;
-            this.CharacterWeight = 6.0f;
-            this.ObstacleWeight = 7.0f;
+            this.NumSamples = 10;
+            this.CharacterWeight = 8.0f;
+            this.ObstacleWeight = 8.6f;
             this.LastSample = Vector3.zero;
             base.Target = new KinematicData();
         }

@@ -14,6 +14,7 @@ public class SceneManager : MonoBehaviour
     public const float MAX_SPEED = 20.0f;
     public const float MAX_ACCELERATION = 40.0f;
     public const float DRAG = 0.1f;
+    public const int CHARACTER_NUMBER = 20;
 
     public GameObject mainCharacterGameObject;
     public GameObject secondaryCharacterGameObject;
@@ -44,7 +45,7 @@ public class SceneManager : MonoBehaviour
         
 	    var obstacles = GameObject.FindGameObjectsWithTag("Obstacle");
 
-	    this.characterControllers = this.CloneCharacters(this.mainCharacterGameObject, 5, obstacles);
+	    this.characterControllers = this.CloneCharacters(this.mainCharacterGameObject, CHARACTER_NUMBER, obstacles);
         this.characterControllers.Add(this.mainCharacterGameObject.GetComponent<MainCharacterController>());
 
         //LINQ expression with a lambda function, returns an array with the DynamicCharacter for each character controler
