@@ -12,6 +12,7 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
 {
     public class RVOMovement : DynamicMovement.DynamicVelocityMatch
     {
+        public const int MAXTHREHOLD = 100;
         public const int CHARACTER_TYPE = 0;
         public const int OBSTACLE_TYPE = 1;
         public override string Name
@@ -112,9 +113,16 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
                     float timePenalty = TimePenalty(timeToCollision, CHARACTER_TYPE);
 
                     // update max time penalty
-                    if (timePenalty > maximumTimePenalty) maximumTimePenalty = timePenalty;
+                    if (timePenalty > maximumTimePenalty)
+                    {
+                        maximumTimePenalty = timePenalty;
+                        
+                    }
 
                 }
+                //OPTIMIZATION  penalty already too large skip this sample
+                //if (maximumTimePenalty > MAXTHREHOLD) continue;
+
 
                 // obstacles
                 foreach (var obstacle in this.Obstacles)
@@ -141,7 +149,14 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
                     minimumPenalty = penalty;
                     bestSample = sample;
                 }
+
+                //OPTIMIZATION minimum penalty sample alredy found
+                //if (minimumPenalty == 1) break;
+
+
             }
+            //Debug.Log(minimumPenalty);
+           
             Debug.DrawLine(Character.Position, Character.Position + bestSample, Color.magenta);
             this.LastSample = bestSample;
             return bestSample;
