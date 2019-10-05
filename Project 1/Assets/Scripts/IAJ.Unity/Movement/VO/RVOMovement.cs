@@ -12,6 +12,8 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
 {
     public class RVOMovement : DynamicMovement.DynamicVelocityMatch
     {
+        public const int CHARACTER_TYPE = 0;
+        public const int OBSTACLE_TYPE = 1;
         public override string Name
         {
             get { return "RVO"; }
@@ -63,10 +65,13 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
             {
                 desiredVelocity
             };
+
             for (int i = 0; i < this.NumSamples; i++)
             {
+                // generate random angle and magnitude for sample
                 float angle = Random.Range(0f, MathConstants.MATH_2PI);
                 float magnitude = Random.Range(this.MaxSpeed / 2, this.MaxSpeed);
+
                 Vector3 velocitySample = MathHelper.ConvertOrientationToVector(angle) * magnitude;
                 Samples.Add(velocitySample);
             }
@@ -77,49 +82,41 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
             return base.GetMovement();
         }
 
+        // Returns best sample that follows desired movement and avoids collisions
         public Vector3 GetBestSample(Vector3 desiredVelocity)
         {
             Vector3 bestSample = Vector3.zero;
             float minimumPenalty = Mathf.Infinity;
-            float timePenalty;
 
             foreach (var sample in this.Samples)
             {
                 float distancePenalty = (desiredVelocity - sample).magnitude;
                 float maximumTimePenalty = 0;
 
-                // character collision avoidance
+                // characters
                 foreach (var otherCharacter in this.Characters)
                 {
+                    // remove this character from collision avoidance
                     if (otherCharacter == this.Character) continue;
 
+                    // verify if otherCharacter is close enough
                     Vector3 deltaPos = otherCharacter.Position - this.Character.Position;
                     if (deltaPos.magnitude > this.IgnoreDistance)
                         continue;
 
+                    // test collision of the ray with the circle
                     Vector3 rayVector = 2 * sample - this.Character.velocity - otherCharacter.velocity;
                     float timeToCollision = MathHelper.TimeToCollisionBetweenRayAndCircle(this.Character.Position, rayVector, otherCharacter.Position, 2 * this.CharacterSize);
 
-                    // future collision
-                    if (timeToCollision > 0.001f)
-                    {
-                        timePenalty = this.CharacterWeight / timeToCollision;
-                    }
-                    // immediate collision
-                    else if (Mathf.Abs(timeToCollision) <= 0.001f)
-                    {
-                        timePenalty = Mathf.Infinity;
-                    }
-                    else
-                    {
-                        timePenalty = 0;
-                    }
+                    // get time penalty of choosing this sample
+                    float timePenalty = TimePenalty(timeToCollision, CHARACTER_TYPE);
 
+                    // update max time penalty
                     if (timePenalty > maximumTimePenalty) maximumTimePenalty = timePenalty;
 
                 }
 
-                // obstacle collision avoidance
+                // obstacles
                 foreach (var obstacle in this.Obstacles)
                 {
                     //Vector3 deltaPos = obstacle.Position - this.Character.Position;
@@ -127,23 +124,12 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
                     //    continue;
 
                     Vector3 rayVector = sample;
-                    float timeToCollision = MathHelper.TimeToCollisionBetweenRayAndCircle(this.Character.Position, rayVector, obstacle.Position, 2 * this.ObstacleSize);
+                    float timeToCollision = MathHelper.TimeToCollisionBetweenRayAndCircle(this.Character.Position, rayVector, obstacle.Position, 2 * this.CharacterSize);
 
-                    // future collision
-                    if (timeToCollision > 0.001f)
-                    {
-                        timePenalty = this.ObstacleWeight / timeToCollision;
-                    }
-                    // immediate collision
-                    else if (Mathf.Abs(timeToCollision) <= 0.001f)
-                    {
-                        timePenalty = Mathf.Infinity;
-                    }
-                    else
-                    {
-                        timePenalty = 0;
-                    }
+                    // get time penalty of choosing this sample
+                    float timePenalty = TimePenalty(timeToCollision, OBSTACLE_TYPE);
 
+                    // update max time penalty
                     if (timePenalty > maximumTimePenalty) maximumTimePenalty = timePenalty;
 
                 }
@@ -158,6 +144,33 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
             }
             Debug.DrawLine(Character.Position, Character.Position + bestSample, Color.magenta);
             return bestSample;
+        }
+
+        // Calculate time penalty depending of time to collision
+        private float TimePenalty(float timeToCollision, int objectType)
+        {
+            float timePenalty;
+
+            // future collision
+            if (timeToCollision > 0.001f)
+            {
+                if (objectType == 0) timePenalty = this.CharacterWeight / timeToCollision;
+                else                 timePenalty = this.ObstacleWeight / timeToCollision;
+
+            }
+            // immediate collision
+            else if (System.Math.Abs(timeToCollision) < 0.001f)
+            {
+                timePenalty = Mathf.Infinity;
+            }
+            // no collision
+            else
+            {
+                timePenalty = 0;
+            }
+
+            return timePenalty;
+
         }
     }
 }
