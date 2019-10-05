@@ -20,11 +20,13 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
         protected List<KinematicData> Characters { get; set; }
         protected List<StaticData> Obstacles { get; set; }
         public float CharacterSize { get; set; }
+        public float ObstacleSize { get; set; }
         public float IgnoreDistance { get; set; }
         public float MaxSpeed { get; set; }
         public List<Vector3> Samples { get; set; }
         public int NumSamples { get; set; }
-        public float AvoidanceWeight { get; set; }
+        public float CharacterWeight { get; set; }
+        public float ObstacleWeight { get; set; }
 
         protected DynamicMovement.DynamicMovement DesiredMovement { get; set; }
 
@@ -33,10 +35,12 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
             this.DesiredMovement = goalMovement;
             this.Characters = movingCharacters;
             this.Obstacles = obstacles;
-            this.IgnoreDistance = 20.0f;
-            this.CharacterSize = 1.0f;
+            this.IgnoreDistance = 15.0f;
+            this.CharacterSize = 0.5f;
+            this.ObstacleSize = 1.6f;
             this.NumSamples = 15;
-            this.AvoidanceWeight = 6.0f;
+            this.CharacterWeight = 6.0f;
+            this.ObstacleWeight = 7.0f;
             base.Target = new KinematicData();
         }
 
@@ -84,6 +88,7 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
                 float distancePenalty = (desiredVelocity - sample).magnitude;
                 float maximumTimePenalty = 0;
 
+                // character collision avoidance
                 foreach (var otherCharacter in this.Characters)
                 {
                     if (otherCharacter == this.Character) continue;
@@ -95,15 +100,13 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
                     Vector3 rayVector = 2 * sample - this.Character.velocity - otherCharacter.velocity;
                     float timeToCollision = MathHelper.TimeToCollisionBetweenRayAndCircle(this.Character.Position, rayVector, otherCharacter.Position, 2 * this.CharacterSize);
 
-                    // no collision if not changed
-
                     // future collision
                     if (timeToCollision > 0.001f)
                     {
-                        timePenalty = this.AvoidanceWeight / timeToCollision;
+                        timePenalty = this.CharacterWeight / timeToCollision;
                     }
                     // immediate collision
-                    else if (System.Math.Abs(timeToCollision) < 0.001f)
+                    else if (Mathf.Abs(timeToCollision) <= 0.001f)
                     {
                         timePenalty = Mathf.Infinity;
                     }
@@ -112,10 +115,36 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
                         timePenalty = 0;
                     }
 
-                    if (timePenalty > maximumTimePenalty)
+                    if (timePenalty > maximumTimePenalty) maximumTimePenalty = timePenalty;
+
+                }
+
+                // obstacle collision avoidance
+                foreach (var obstacle in this.Obstacles)
+                {
+                    //Vector3 deltaPos = obstacle.Position - this.Character.Position;
+                    //if (deltaPos.magnitude > this.IgnoreDistance)
+                    //    continue;
+
+                    Vector3 rayVector = sample;
+                    float timeToCollision = MathHelper.TimeToCollisionBetweenRayAndCircle(this.Character.Position, rayVector, obstacle.Position, 2 * this.ObstacleSize);
+
+                    // future collision
+                    if (timeToCollision > 0.001f)
                     {
-                        maximumTimePenalty = timePenalty;
+                        timePenalty = this.ObstacleWeight / timeToCollision;
                     }
+                    // immediate collision
+                    else if (Mathf.Abs(timeToCollision) <= 0.001f)
+                    {
+                        timePenalty = Mathf.Infinity;
+                    }
+                    else
+                    {
+                        timePenalty = 0;
+                    }
+
+                    if (timePenalty > maximumTimePenalty) maximumTimePenalty = timePenalty;
 
                 }
 
