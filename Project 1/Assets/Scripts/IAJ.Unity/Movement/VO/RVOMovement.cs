@@ -33,9 +33,9 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
             this.DesiredMovement = goalMovement;
             this.Characters = movingCharacters;
             this.Obstacles = obstacles;
-            this.IgnoreDistance = 20.0f;
-            this.CharacterSize = 1.0f;
-            this.NumSamples = 15;
+            this.IgnoreDistance = 15.0f;
+            this.CharacterSize = 2.0f;
+            this.NumSamples = 12;
             this.AvoidanceWeight = 6.0f;
             base.Target = new KinematicData();
         }
@@ -77,13 +77,13 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
         {
             Vector3 bestSample = Vector3.zero;
             float minimumPenalty = Mathf.Infinity;
-            float timePenalty;
 
             foreach (var sample in this.Samples)
             {
                 float distancePenalty = (desiredVelocity - sample).magnitude;
                 float maximumTimePenalty = 0;
 
+                //Characters
                 foreach (var otherCharacter in this.Characters)
                 {
                     if (otherCharacter == this.Character) continue;
@@ -95,27 +95,20 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
                     Vector3 rayVector = 2 * sample - this.Character.velocity - otherCharacter.velocity;
                     float timeToCollision = MathHelper.TimeToCollisionBetweenRayAndCircle(this.Character.Position, rayVector, otherCharacter.Position, 2 * this.CharacterSize);
 
-                    // no collision if not changed
+                    maximumTimePenalty = MaxTimePenalty(timeToCollision);
 
-                    // future collision
-                    if (timeToCollision > 0.001f)
-                    {
-                        timePenalty = this.AvoidanceWeight / timeToCollision;
-                    }
-                    // immediate collision
-                    else if (System.Math.Abs(timeToCollision) < 0.001f)
-                    {
-                        timePenalty = Mathf.Infinity;
-                    }
-                    else
-                    {
-                        timePenalty = 0;
-                    }
+                }
+                //Obstacles
+                foreach (var obstacle in this.Obstacles)
+                {
+                    Vector3 deltaPos = obstacle.Position - this.Character.Position;
+                    if (deltaPos.magnitude > this.IgnoreDistance)
+                        continue;
 
-                    if (timePenalty > maximumTimePenalty)
-                    {
-                        maximumTimePenalty = timePenalty;
-                    }
+                    Vector3 rayVector = 2 * sample - this.Character.velocity;
+                    float timeToCollision = MathHelper.TimeToCollisionBetweenRayAndCircle(this.Character.Position, rayVector, obstacle.Position, 2* this.CharacterSize);
+
+                    maximumTimePenalty = MaxTimePenalty(timeToCollision);
 
                 }
 
@@ -129,6 +122,34 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
             }
             Debug.DrawLine(Character.Position, Character.Position + bestSample, Color.magenta);
             return bestSample;
+        }
+        private float MaxTimePenalty(float TimeToCollision)
+        {
+            float maximumTimePenalty = 0;
+            float timePenalty;
+            // no collision if not changed
+
+            // future collision
+            if (TimeToCollision > 0.001f)
+            {
+                timePenalty = this.AvoidanceWeight / TimeToCollision;
+            }
+            // immediate collision
+            else if (System.Math.Abs(TimeToCollision) < 0.001f)
+            {
+                timePenalty = Mathf.Infinity;
+            }
+            else
+            {
+                timePenalty = 0;
+            }
+
+            if (timePenalty > maximumTimePenalty)
+            {
+                maximumTimePenalty = timePenalty;
+            }
+            return maximumTimePenalty;
+
         }
     }
 }
