@@ -41,8 +41,8 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
             this.CharacterSize = 1.2f;
             this.ObstacleSize = 1.6f;
             this.NumSamples = 10;
-            this.CharacterWeight = 8.0f;
-            this.ObstacleWeight = 8.6f;
+            this.CharacterWeight = 5.0f;
+            this.ObstacleWeight = 6.6f;
             this.LastSample = Vector3.zero;
             base.Target = new KinematicData();
         }
