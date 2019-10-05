@@ -19,30 +19,31 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
             get { return "RVO"; }
         }
 
+        protected DynamicMovement.DynamicMovement DesiredMovement { get; set; }
         protected List<KinematicData> Characters { get; set; }
         protected List<StaticData> Obstacles { get; set; }
+        public List<Vector3> Samples { get; set; }
+        public int NumSamples { get; set; }
         public float CharacterSize { get; set; }
         public float ObstacleSize { get; set; }
         public float IgnoreDistance { get; set; }
         public float MaxSpeed { get; set; }
-        public List<Vector3> Samples { get; set; }
-        public int NumSamples { get; set; }
         public float CharacterWeight { get; set; }
         public float ObstacleWeight { get; set; }
-
-        protected DynamicMovement.DynamicMovement DesiredMovement { get; set; }
+        public Vector3 LastSample { get; set; }
 
         public RVOMovement(DynamicMovement.DynamicMovement goalMovement, List<KinematicData> movingCharacters, List<StaticData> obstacles)
         {
             this.DesiredMovement = goalMovement;
             this.Characters = movingCharacters;
             this.Obstacles = obstacles;
-            this.IgnoreDistance = 15.0f;
+            this.IgnoreDistance = 20.0f;
             this.CharacterSize = 0.5f;
             this.ObstacleSize = 1.6f;
-            this.NumSamples = 15;
+            this.NumSamples = 20;
             this.CharacterWeight = 6.0f;
             this.ObstacleWeight = 7.0f;
+            this.LastSample = Vector3.zero;
             base.Target = new KinematicData();
         }
 
@@ -61,10 +62,9 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
             }
 
             // 2 - generate samples
-            this.Samples = new List<Vector3>
-            {
-                desiredVelocity
-            };
+            this.Samples = new List<Vector3>();
+            this.Samples.Add(desiredVelocity); // desired movement
+            this.Samples.Add(this.LastSample); // add last sample (maybe best sample)
 
             for (int i = 0; i < this.NumSamples; i++)
             {
@@ -124,7 +124,7 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
                     //    continue;
 
                     Vector3 rayVector = sample;
-                    float timeToCollision = MathHelper.TimeToCollisionBetweenRayAndCircle(this.Character.Position, rayVector, obstacle.Position, 2 * this.CharacterSize);
+                    float timeToCollision = MathHelper.TimeToCollisionBetweenRayAndCircle(this.Character.Position, rayVector, obstacle.Position, 2 * this.ObstacleSize);
 
                     // get time penalty of choosing this sample
                     float timePenalty = TimePenalty(timeToCollision, OBSTACLE_TYPE);
@@ -143,6 +143,7 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
                 }
             }
             Debug.DrawLine(Character.Position, Character.Position + bestSample, Color.magenta);
+            this.LastSample = bestSample;
             return bestSample;
         }
 
