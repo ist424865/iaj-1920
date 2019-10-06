@@ -14,9 +14,9 @@ public class MainCharacterController : MonoBehaviour {
     public const float Z_WORLD_SIZE = 32.5f;
     private const float MAX_ACCELERATION = 40.0f;
     private const float MAX_SPEED = 20.0f;
-    private const float DRAG = 0.1f;
+    private const float DRAG = 0.6f;
     private const float MAX_LOOK_AHEAD = 7.5f;
-    private const float WHISKER_FACTOR = 2;
+    private const float WHISKER_FACTOR = 2f;
     private const float MAX_TIME_LOOK_AHEAD = 1.0f;
     private const float COLLISION_RADIUS = 2.0f;
     private const float AVOID_MARGIN = 10.0f;
@@ -44,8 +44,12 @@ public class MainCharacterController : MonoBehaviour {
     //early initialization
     void Awake()
     {
-        this.character = new DynamicCharacter(this.gameObject);
-    
+        this.character = new DynamicCharacter(this.gameObject)
+        {
+            Drag = DRAG,
+            MaxSpeed = MAX_SPEED
+        };
+
 
         this.priorityMovement = new PriorityMovement
         {

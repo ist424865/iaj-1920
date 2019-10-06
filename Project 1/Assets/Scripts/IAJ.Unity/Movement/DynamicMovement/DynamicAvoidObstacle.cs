@@ -39,13 +39,13 @@ namespace Assets.Scripts.IAJ.Unity.Movement.DynamicMovement
 
 
             // Left whisker ray
-            Vector3 leftOrientation = Quaternion.AngleAxis(-30, Vector3.up) * characterOrientation;
+            Vector3 leftOrientation = Quaternion.AngleAxis(-20, Vector3.up) * characterOrientation;
             Ray leftRayVector = new Ray(characterPosititon, leftOrientation);
             hasLeftCollided = this.collider.Raycast(leftRayVector, out leftHit, this.MaxLookAhead / this.WhiskerFactor);
 
             
             // Right whisker ray
-            Vector3 rightOrientation = Quaternion.AngleAxis(30, Vector3.up) * characterOrientation;
+            Vector3 rightOrientation = Quaternion.AngleAxis(20, Vector3.up) * characterOrientation;
             Ray rightRayVector = new Ray(characterPosititon, rightOrientation);
             hasRightCollided = this.collider.Raycast(rightRayVector, out rightHit, this.MaxLookAhead / this.WhiskerFactor);
 
