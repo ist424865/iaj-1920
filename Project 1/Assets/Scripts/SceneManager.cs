@@ -14,7 +14,7 @@ public class SceneManager : MonoBehaviour
     public const float MAX_SPEED = 20.0f;
     public const float MAX_ACCELERATION = 40.0f;
     public const float DRAG = 0.1f;
-    public const int CHARACTER_NUMBER = 5;
+    public const int CHARACTER_NUMBER = 50;
 
     public GameObject mainCharacterGameObject;
     public GameObject secondaryCharacterGameObject;

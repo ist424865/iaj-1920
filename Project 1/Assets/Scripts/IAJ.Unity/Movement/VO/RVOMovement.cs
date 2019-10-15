@@ -31,6 +31,7 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
         public float MaxSpeed { get; set; }
         public float CharacterWeight { get; set; }
         public float ObstacleWeight { get; set; }
+        public float GoodEnoughPenalty { get; set; }
         public Vector3 LastSample { get; set; }
 
         public RVOMovement(DynamicMovement.DynamicMovement goalMovement, List<KinematicData> movingCharacters, List<StaticData> obstacles)
@@ -38,13 +39,14 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
             this.DesiredMovement = goalMovement;
             this.Characters = movingCharacters;
             this.Obstacles = obstacles;
-            this.IgnoreDistance = 7.9f;
+            this.IgnoreDistance = 7.5f;
             this.CharacterSize = 1.2f;
             this.ObstacleSize = 1.6f;
             this.NumSamples = 10;
             this.CharacterWeight = 5.0f;
             this.ObstacleWeight = 6.6f;
             this.LastSample = Vector3.zero;
+            this.GoodEnoughPenalty = 0.5f;
             base.Target = new KinematicData();
         }
 
@@ -120,8 +122,8 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
                     }
 
                 }
-                //OPTIMIZATION  penalty already too large skip this sample
-                //if (maximumTimePenalty > MAXTHREHOLD) continue;
+                // OPTIMIZATION  penalty already too large skip this sample
+                if (maximumTimePenalty > MAXTHREHOLD) continue;
 
 
                 // obstacles
@@ -150,13 +152,11 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
                     bestSample = sample;
                 }
 
-                //OPTIMIZATION minimum penalty sample alredy found
-                //if (minimumPenalty == 1) break;
+                // OPTIMIZATION good enough penalty sample already found
+                if (minimumPenalty <= this.GoodEnoughPenalty) break;
 
 
-            }
-            //Debug.Log(minimumPenalty);
-           
+            }           
             Debug.DrawLine(Character.Position, Character.Position + bestSample, Color.magenta);
             this.LastSample = bestSample;
             return bestSample;
@@ -168,14 +168,14 @@ namespace Assets.Scripts.IAJ.Unity.Movement.VO
             float timePenalty;
 
             // future collision
-            if (timeToCollision > 0.001f)
+            if (timeToCollision > 0.00001f)
             {
                 if (objectType == 0) timePenalty = this.CharacterWeight / timeToCollision;
                 else                 timePenalty = this.ObstacleWeight / timeToCollision;
 
             }
             // immediate collision
-            else if (System.Math.Abs(timeToCollision) < 0.001f)
+            else if (System.Math.Abs(timeToCollision) < 0.00001f)
             {
                 timePenalty = Mathf.Infinity;
             }

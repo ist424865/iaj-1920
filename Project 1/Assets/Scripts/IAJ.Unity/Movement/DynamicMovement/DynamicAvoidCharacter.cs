@@ -20,25 +20,28 @@ namespace Assets.Scripts.IAJ.Unity.Movement.DynamicMovement
 
         public override MovementOutput GetMovement()
         {
+            MovementOutput output = new MovementOutput();
+            output.Clear();
+
             Vector3 deltaPos = this.Target.Position - this.Character.Position;
             Vector3 deltaVel = this.Target.velocity - this.Character.velocity;
             float deltaSqrSpeed = deltaVel.sqrMagnitude;
 
-            if (deltaSqrSpeed < 0.1f) {
-                return new MovementOutput(); // empty output
+            if (deltaSqrSpeed < 0.001f) {
+                return output; // empty output
             }
 
             float timeToClosest = -Vector3.Dot(deltaPos, deltaVel) / deltaSqrSpeed;
 
             if (timeToClosest > this.MaxTimeLookAhead) {
-                return new MovementOutput(); // empty output
+                return output; // empty output
             }
 
             Vector3 futureDeltaPos = deltaPos + deltaVel * timeToClosest;
             float futureDistance = futureDeltaPos.magnitude;
 
             if (futureDistance > 2 * this.CollisionRadius) {
-                return new MovementOutput(); // empty output
+                return output; // empty output
             }
             
             if (futureDistance <= 0 || deltaPos.magnitude < 2 * this.CollisionRadius) {

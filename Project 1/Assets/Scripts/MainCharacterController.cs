@@ -12,19 +12,19 @@ public class MainCharacterController : MonoBehaviour {
 
     public const float X_WORLD_SIZE = 55;
     public const float Z_WORLD_SIZE = 32.5f;
-    private const float MAX_ACCELERATION = 40.0f;
+    private const float MAX_ACCELERATION = 50.0f;
     private const float MAX_SPEED = 20.0f;
     private const float DRAG = 0.6f;
     private const float MAX_LOOK_AHEAD = 7.5f;
-    private const float WHISKER_FACTOR = 2f;
-    private const float MAX_TIME_LOOK_AHEAD = 1.0f;
-    private const float COLLISION_RADIUS = 2.0f;
+    private const float WHISKER_FACTOR = 1.75f;
+    private const float MAX_TIME_LOOK_AHEAD = 0.8f;
+    private const float COLLISION_RADIUS = 1.25f;
     private const float AVOID_MARGIN = 10.0f;
-    private const float STOP_RADIUS = 1.5f;
-    private const float SLOW_RADIUS = 12.0f;
-    private const float WEIGHT_AVOID_OBSTACLE = 70f;
-    private const float WEIGHT_AVOID_CHARACTER = 30f;
-    private const float WEIGHT_PATROL = 20f;
+    private const float STOP_RADIUS = 2.0f;
+    private const float SLOW_RADIUS = 30.0f;
+    private const float WEIGHT_AVOID_OBSTACLE = 6.5f;
+    private const float WEIGHT_AVOID_CHARACTER = 3.0f;
+    private const float WEIGHT_PATROL = 3.0f;
 
 
     public KeyCode stopKey = KeyCode.S;
