@@ -17,6 +17,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
         public uint TotalExploredNodes { get; protected set; }
         public int MaxOpenNodes { get; protected set; }
         public float TotalProcessingTime { get; protected set; }
+        public float StartTime { get; protected set; }
 
         public bool InProgress { get; set; }
 
@@ -36,9 +37,10 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
             this.NavMeshGraph = graph;
             this.Open = open;
             this.Closed = closed;
-            this.NodesPerFrame = 15; // value between 10-15
+            this.NodesPerFrame = 10; // value between 10-15
             this.InProgress = false;
             this.Heuristic = heuristic;
+            this.StartTime = Time.time;
         }
 
         public virtual void InitializePathfindingSearch(Vector3 startPosition, Vector3 goalPosition)
@@ -86,20 +88,21 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
             NodeRecord childInClosed = this.Closed.SearchInClosed(childNode);
 
             // if child node is not in open nor in closed
-            if (childInOpen == null || childInClosed == null)
+            if (childInOpen == null && childInClosed == null)
             {
                 this.Open.AddToOpen(childNode);
             }
             // if child node is in open with higher F-value
-            else if (childInOpen.fValue > childNode.fValue)
+            else if (childInOpen != null && childInOpen.fValue >= childNode.fValue) // solve ties by ranking better new nodes
             {
-                this.Open.Replace(this.Open.PeekBest(), childNode);
+                this.Open.Replace(childInOpen, childNode);
             }
             // if child is in closed with higher F-value
-            else if (childInClosed.fValue > childNode.fValue)
+            else if (childInClosed != null && childInClosed.fValue > childNode.fValue)
             {
-                this.Closed.RemoveFromClosed(childNode);
+                this.Closed.RemoveFromClosed(childInClosed);
                 this.Open.AddToOpen(childNode);
+                this.TotalExploredNodes--;
             }
         }
 
@@ -112,13 +115,20 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
                 return true;
             }
 
+            // update max open nodes
+            int openCount = this.Open.CountOpen();
+            if (this.MaxOpenNodes < openCount)
+                this.MaxOpenNodes = openCount;
+
             // get node with lowest F (best node)
             NodeRecord currentNode = this.Open.GetBestAndRemove();
+            this.TotalExploredNodes++;
 
             // reach solution node
             if (currentNode.node == this.GoalNode)
             {
                 solution = this.CalculateSolution(currentNode, false); // solution is complete
+                this.TotalProcessingTime = Time.time - this.StartTime;
                 return true;
             }
 
@@ -128,14 +138,17 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
             // iterate over nodes connected to current node
             var outConnections = currentNode.node.OutEdgeCount;
             // stop iteration when reach NodesPerFrame number
-            for (int i = 0; i < outConnections && i < this.NodesPerFrame; i++)
+            for (int i = 0; i < outConnections; i++)
             {
                 this.ProcessChildNode(currentNode, currentNode.node.EdgeOut(i), i);
             }
 
             // calculate partial solution if asked
             if (returnPartialSolution)
+            {
                 solution = this.CalculateSolution(currentNode, true);
+                this.TotalProcessingTime = Time.time - this.StartTime;
+            }
             else
                 solution = null;
 

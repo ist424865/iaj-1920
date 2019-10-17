@@ -39,7 +39,7 @@ public class PathfindingManager : MonoBehaviour {
         this.navMesh = navMeshGraph;
 
         this.AStarPathFinding = pathfindingAlgorithm;
-        this.AStarPathFinding.NodesPerFrame = 200;
+        this.AStarPathFinding.NodesPerFrame = 15;
     }
 
 	// Use this for initialization
@@ -47,7 +47,7 @@ public class PathfindingManager : MonoBehaviour {
 	{
         this.currentClickNumber = 1;
          
-		this.Initialize(NavigationManager.Instance.NavMeshGraphs[0], new AStarPathfinding(NavigationManager.Instance.NavMeshGraphs[0], new SimpleUnorderedNodeList(), new SimpleUnorderedNodeList(), new ZeroHeuristic()));
+		this.Initialize(NavigationManager.Instance.NavMeshGraphs[0], new AStarPathfinding(NavigationManager.Instance.NavMeshGraphs[0], new SimpleUnorderedNodeList(), new NodeDictionary(), new EuclideanDistance()));
     }
 
     // Update is called once per frame
@@ -111,7 +111,7 @@ public class PathfindingManager : MonoBehaviour {
         //call the pathfinding method if the user specified a new goal
         if (this.AStarPathFinding.InProgress)
 	    {
-	        var finished = this.AStarPathFinding.Search(out this.currentSolution);
+	        var finished = this.AStarPathFinding.Search(out this.currentSolution, false);
             if(finished)
             {
                 this.AStarPathFinding.InProgress = false;
