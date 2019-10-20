@@ -3,6 +3,7 @@ using Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures;
 using Assets.Scripts.IAJ.Unity.Pathfinding.Heuristics;
 using RAIN.Navigation.Graph;
 using RAIN.Navigation.NavMesh;
+using UnityEngine;
 
 namespace Assets.Scripts.IAJ.Unity.Pathfinding
 {
@@ -20,10 +21,6 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
 
         protected override void ProcessChildNode(NodeRecord bestNode, NavigationGraphEdge connectionEdge, int edgeIndex)
         {
-            float f;
-            float g;
-            float h;
-
             var childNode = connectionEdge.ToNode;
             var childNodeRecord = this.NodeRecordArray.GetNodeRecord(childNode);
 
@@ -42,7 +39,32 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
                 this.NodeRecordArray.AddSpecialCaseNode(childNodeRecord);
             }
 
-            //TODO: implement the rest of your code here
+            // calculate g, h and f values of child node
+            float g = bestNode.gValue + (childNode.LocalPosition - bestNode.node.LocalPosition).magnitude;
+            float h = this.Heuristic.H(childNode, this.GoalNode);
+            float f = g + h;
+
+            // if child node is not in open nor in closed
+            if (childNodeRecord.status == NodeStatus.Unvisited)
+            {
+                this.UpdateNodeRecord(childNodeRecord, bestNode, g, h, f);
+                this.Open.AddToOpen(childNodeRecord);
+            }
+            // if child node is in open with higher F-value
+            else if (childNodeRecord.status == NodeStatus.Open && childNodeRecord.fValue >= f) // solve ties by ranking better new nodes
+            {
+                // TODO: replace in Open is needed? Is this correct?
+                // replace here is replacing the values as the node reference is the same
+                this.UpdateNodeRecord(childNodeRecord, bestNode, g, h, f);
+            }
+            // if child is in closed with higher F-value
+            else if (childNodeRecord.status == NodeStatus.Closed && childNodeRecord.fValue > f)
+            {
+                this.UpdateNodeRecord(childNodeRecord, bestNode, g, h, f);
+                this.Closed.RemoveFromClosed(childNodeRecord);
+                this.Open.AddToOpen(childNodeRecord);
+                this.TotalExploredNodes--;
+            }
         }
             
         private List<NavigationGraphNode> GetNodesHack(NavMeshPathGraph graph)
@@ -54,6 +76,15 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
             //by the way, NavMeshPathGraph is a derived class from RAINNavigationGraph class and the _pathNodes field is defined in the base class,
             //that's why we're using the type of the base class in the reflection call
             return (List<NavigationGraphNode>) Utils.Reflection.GetInstanceField(typeof(RAINNavigationGraph), graph, "_pathNodes");
+        }
+
+        // Update values at given NodeRecord
+        public void UpdateNodeRecord(NodeRecord nodeToBeReplaced, NodeRecord parent, float g, float h, float f)
+        {
+            nodeToBeReplaced.parent = parent;
+            nodeToBeReplaced.gValue = g;
+            nodeToBeReplaced.hValue = h;
+            nodeToBeReplaced.fValue = f;
         }
     }
 }

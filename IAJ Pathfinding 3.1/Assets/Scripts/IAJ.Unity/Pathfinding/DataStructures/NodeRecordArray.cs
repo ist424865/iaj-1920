@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using RAIN.Navigation.Graph;
+using UnityEngine;
 
 namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
 {
@@ -67,80 +68,83 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
 
         void IClosedSet.Initialize()
         {
-            //TODO implement
-            throw new NotImplementedException();
+            // TODO: is this correct? it isn't necessary to initialize Open?
+            //this.Open.Initialize();
+            //we want this to be very efficient (that's why we use for)
+            for (int i = 0; i < this.NodeRecords.Length; i++)
+            {
+                this.NodeRecords[i].status = NodeStatus.Unvisited;
+            }
+
+            this.SpecialCaseNodes.Clear();
         }
 
         public void AddToOpen(NodeRecord nodeRecord)
         {
-            //TODO implement
-            throw new NotImplementedException();
+            nodeRecord.status = NodeStatus.Open;
+            this.Open.AddToOpen(nodeRecord);
         }
 
         public void AddToClosed(NodeRecord nodeRecord)
         {
-            //TODO implement
-            throw new NotImplementedException();
+            nodeRecord.status = NodeStatus.Closed;
         }
 
         public NodeRecord SearchInOpen(NodeRecord nodeRecord)
         {
-            //TODO implement
-            throw new NotImplementedException();
+            if (nodeRecord.status == NodeStatus.Open)
+                return nodeRecord;
+            return null;
         }
 
         public NodeRecord SearchInClosed(NodeRecord nodeRecord)
         {
-            //TODO implement
-            throw new NotImplementedException();
+            if (nodeRecord.status == NodeStatus.Closed)
+                return nodeRecord;
+            return null;
         }
 
         public NodeRecord GetBestAndRemove()
         {
-            //TODO implement
-            throw new NotImplementedException();
+            NodeRecord nodeRecord = this.Open.GetBestAndRemove();
+            nodeRecord.status = NodeStatus.Unvisited;
+            return nodeRecord;
         }
 
         public NodeRecord PeekBest()
         {
-            //TODO implement
-            throw new NotImplementedException();
+            return this.Open.PeekBest();
         }
 
         public void Replace(NodeRecord nodeToBeReplaced, NodeRecord nodeToReplace)
         {
-            //TODO implement
-            throw new NotImplementedException();
+            // this is useless because the references are the same
         }
 
         public void RemoveFromOpen(NodeRecord nodeRecord)
         {
-            //TODO implement
-            throw new NotImplementedException();
+            this.Open.RemoveFromOpen(nodeRecord);
+            nodeRecord.status = NodeStatus.Unvisited;
         }
 
         public void RemoveFromClosed(NodeRecord nodeRecord)
         {
-            //TODO implement
-            throw new NotImplementedException();
+            nodeRecord.status = NodeStatus.Unvisited;
         }
 
         ICollection<NodeRecord> IOpenSet.All()
         {
-            //TODO implement
-            throw new NotImplementedException();
+            return this.Open.All();
         }
 
         ICollection<NodeRecord> IClosedSet.All()
         {
-            //TODO implement
-            throw new NotImplementedException();
+            return Array.FindAll(this.NodeRecords, nodeRecord => nodeRecord.status == NodeStatus.Closed);
         }
 
         public int CountOpen()
         {
-            //TODO implement
-            throw new NotImplementedException();
+            return this.Open.CountOpen();
         }
     }
 }

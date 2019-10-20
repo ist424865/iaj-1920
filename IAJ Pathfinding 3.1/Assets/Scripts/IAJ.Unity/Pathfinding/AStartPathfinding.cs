@@ -37,14 +37,13 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
             this.NavMeshGraph = graph;
             this.Open = open;
             this.Closed = closed;
-            this.NodesPerFrame = 10; // value between 10-15
             this.InProgress = false;
             this.Heuristic = heuristic;
-            this.StartTime = Time.time;
         }
 
         public virtual void InitializePathfindingSearch(Vector3 startPosition, Vector3 goalPosition)
         {
+            this.StartTime = Time.time;
             this.StartPosition = startPosition;
             this.GoalPosition = goalPosition;
             this.StartNode = this.Quantize(this.StartPosition);
@@ -108,39 +107,45 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
 
         public bool Search(out GlobalPath solution, bool returnPartialSolution = false)
         {
-            // cannot reach solution node
-            if (this.Open.CountOpen() == 0)
+            NodeRecord currentNode = null;
+
+            // iterate NodesPerFrame times
+            for (int count = 0; count <= this.NodesPerFrame; count++)
             {
-                solution = null;
-                return true;
-            }
+                // cannot reach solution node
+                if (this.Open.CountOpen() == 0)
+                {
+                    solution = null;
+                    return true;
+                }
 
-            // update max open nodes
-            int openCount = this.Open.CountOpen();
-            if (this.MaxOpenNodes < openCount)
-                this.MaxOpenNodes = openCount;
+                // update max open nodes
+                int openCount = this.Open.CountOpen();
+                if (this.MaxOpenNodes < openCount)
+                    this.MaxOpenNodes = openCount;
 
-            // get node with lowest F (best node)
-            NodeRecord currentNode = this.Open.GetBestAndRemove();
-            this.TotalExploredNodes++;
+                // get node with lowest F (best node)
+                currentNode = this.Open.GetBestAndRemove();
+                this.TotalExploredNodes++;
 
-            // reach solution node
-            if (currentNode.node == this.GoalNode)
-            {
-                solution = this.CalculateSolution(currentNode, false); // solution is complete
-                this.TotalProcessingTime = Time.time - this.StartTime;
-                return true;
-            }
+                // reach solution node
+                if (currentNode.node == this.GoalNode)
+                {
+                    solution = this.CalculateSolution(currentNode, false); // solution is complete
+                    this.TotalProcessingTime = Time.time - this.StartTime;
+                    return true;
+                }
 
-            // start processing current node
-            this.Closed.AddToClosed(currentNode);
+                // start processing current node
+                this.Closed.AddToClosed(currentNode);
 
-            // iterate over nodes connected to current node
-            var outConnections = currentNode.node.OutEdgeCount;
-            // stop iteration when reach NodesPerFrame number
-            for (int i = 0; i < outConnections; i++)
-            {
-                this.ProcessChildNode(currentNode, currentNode.node.EdgeOut(i), i);
+                // iterate over nodes connected to current node
+                var outConnections = currentNode.node.OutEdgeCount;
+                for (int i = 0; i < outConnections; i++)
+                {
+                    this.ProcessChildNode(currentNode, currentNode.node.EdgeOut(i), i);
+                }
+
             }
 
             // calculate partial solution if asked

@@ -20,9 +20,10 @@ public class PathfindingManager : MonoBehaviour {
     public GameObject p4;
     public GameObject p5;
     public GameObject p6;
+    public GameObject p7;
 
-	//private fields for internal use only
-	private Vector3 startPosition;
+    //private fields for internal use only
+    private Vector3 startPosition;
 	private Vector3 endPosition;
 	private NavMeshPathGraph navMesh;
     private int currentClickNumber;
@@ -39,15 +40,19 @@ public class PathfindingManager : MonoBehaviour {
         this.navMesh = navMeshGraph;
 
         this.AStarPathFinding = pathfindingAlgorithm;
-        this.AStarPathFinding.NodesPerFrame = 15;
+        this.AStarPathFinding.NodesPerFrame = 100;
     }
 
 	// Use this for initialization
 	void Awake ()
 	{
         this.currentClickNumber = 1;
-         
-		this.Initialize(NavigationManager.Instance.NavMeshGraphs[0], new AStarPathfinding(NavigationManager.Instance.NavMeshGraphs[0], new SimpleUnorderedNodeList(), new NodeDictionary(), new EuclideanDistance()));
+
+        // A* Pathfinding
+        //this.Initialize(NavigationManager.Instance.NavMeshGraphs[0], new AStarPathfinding(NavigationManager.Instance.NavMeshGraphs[0], new NodePriorityHeap(), new NodeDictionary(), new EuclideanDistance()));
+
+        // NodeArray A* Pathfinding
+        this.Initialize(NavigationManager.Instance.NavMeshGraphs[0], new NodeArrayAStarPathFinding(NavigationManager.Instance.NavMeshGraphs[0], new EuclideanDistance()));
     }
 
     // Update is called once per frame
@@ -106,6 +111,10 @@ public class PathfindingManager : MonoBehaviour {
         else if (Input.GetKeyDown(KeyCode.Alpha5))
         {
             this.InitializePathFinding(this.p1.transform.localPosition, this.p3.transform.localPosition);
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha6))
+        {
+            this.InitializePathFinding(this.p4.transform.localPosition, this.p7.transform.localPosition);
         }
 
         //call the pathfinding method if the user specified a new goal
