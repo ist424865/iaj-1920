@@ -1,62 +1,74 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures.HPStructures;
+using Assets.Scripts.IAJ.Unity.Pathfinding.Path;
+using Assets.Scripts.IAJ.Unity.Utils;
 using RAIN.Navigation.NavMesh;
 using System.Collections.Generic;
 using RAIN.Navigation.Graph;
-using Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures.GoalBounding;
-using Assets.Scripts.IAJ.Unity.Pathfinding.GoalBounding;
+using Assets.Scripts.IAJ.Unity.Pathfinding;
+using Assets.Scripts.IAJ.Unity.Pathfinding.Heuristics;
+using System;
 
-public class IAJMenuItems 
-{
-    [MenuItem("IAJ/Calculate Goal Bounds")]
-    private static void CalculateGoalBounds()
+public class IAJMenuItems  {
+
+    [MenuItem("IAJ/Create Cluster Graph")]
+    private static void CreateClusterGraph()
     {
+        Cluster cluster;
+        Gateway gateway;
+
+        //get cluster game objects
+        var clusters = GameObject.FindGameObjectsWithTag("Cluster");
+        //get gateway game objects
+        var gateways = GameObject.FindGameObjectsWithTag("Gateway");
         //get the NavMeshGraph from the current scene
         NavMeshPathGraph navMesh = GameObject.Find("Navigation Mesh").GetComponent<NavMeshRig>().NavMesh.Graph;
 
-		//this is needed because RAIN AI does some initialization the first time the QuantizeToNode method is called
-		//if this method is not called, the connections in the navigationgraph are not properly initialized
-		navMesh.QuantizeToNode (new Vector3 (0, 0, 0), 1.0f);
+        ClusterGraph clusterGraph = ScriptableObject.CreateInstance<ClusterGraph>();
 
-        var dijkstra = new GoalBoundsDijkstraMapFlooding(navMesh);
-
-        GoalBoundingTable goalBoundingTable = ScriptableObject.CreateInstance<GoalBoundingTable>();
-        var nodes = GetNodesHack(navMesh);
-        goalBoundingTable.table = new NodeGoalBounds[nodes.Count];
-
-        NodeGoalBounds auxGoalBounds;
-
-        //calculate goal bounds for each edge
-        for (int i=0; i < nodes.Count; i++)
+        //create gateway instances for each gateway game object
+        for(int i = 0; i < gateways.Length; i++)
         {
-            if(nodes[i] is NavMeshEdge)
+            var gatewayGO = gateways[i];
+            gateway = ScriptableObject.CreateInstance<Gateway>();
+            gateway.Initialize(i,gatewayGO);
+            clusterGraph.gateways.Add(gateway);
+        }
+
+        //create cluster instances for each cluster game object and check for connections through gateways
+        foreach (var clusterGO in clusters)
+        {
+
+            cluster = ScriptableObject.CreateInstance<Cluster>();
+            cluster.Initialize(clusterGO);
+            clusterGraph.clusters.Add(cluster);
+
+            //determine intersection between cluster and gateways and add connections when they intersect
+            foreach(var gate in clusterGraph.gateways)
             {
-                //initialize the GoalBounds structure for the edge
-                auxGoalBounds = ScriptableObject.CreateInstance<NodeGoalBounds>();
-                auxGoalBounds.connectionBounds = new Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures.GoalBounding.Bounds[nodes[i].OutEdgeCount];
-                for (int j = 0; j < nodes[i].OutEdgeCount; j++)
+                if (MathHelper.BoundingBoxIntersection(cluster.min, cluster.max, gate.min, gate.max))
                 {
-                    auxGoalBounds.connectionBounds[j] = ScriptableObject.CreateInstance<Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures.GoalBounding.Bounds>();
-                    auxGoalBounds.connectionBounds[j].InitializeBounds(nodes[i].Position);
+                    cluster.gateways.Add(gate);
+                    gate.clusters.Add(cluster);
                 }
-
-                if(i%10 == 0)
-                {
-                    float percentage = (float)i / (float)nodes.Count;
-                    EditorUtility.DisplayProgressBar("GoalBounding precomputation progress", "Calculating goal bounds for each edge", percentage);
-                }
-
-                //run a Dijkstra mapflooding for each node
-                dijkstra.Search(nodes[i], auxGoalBounds);
-
-                goalBoundingTable.table[i] = auxGoalBounds;
-                //edgeIndex++;
             }
         }
-        
-		//saving the assets, this takes forever using Unity's serialization mechanism
-        goalBoundingTable.SaveToAssetDatabase();
-        EditorUtility.ClearProgressBar();
+
+        // Second stage of the algorithm, calculation of the Gateway table
+
+        GlobalPath solution = null;
+        float cost;
+        Gateway startGate;
+        Gateway endGate;
+
+         var pathfindingManager = new PathfindingManager();
+        pathfindingManager.Initialize(navMesh, new NodeArrayAStarPathFinding(navMesh, new EuclideanDistanceHeuristic()));
+
+        //TODO implement the rest of the algorithm here, i.e. build the GatewayDistanceTable
+
+        //create a new asset that will contain the ClusterGraph and save it to disk (DO NOT REMOVE THIS LINE)
+        clusterGraph.SaveToAssetDatabase();
     }
 
 
