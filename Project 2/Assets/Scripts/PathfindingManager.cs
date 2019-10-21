@@ -52,7 +52,7 @@ public class PathfindingManager : MonoBehaviour {
         //this.Initialize(NavigationManager.Instance.NavMeshGraphs[0], new AStarPathfinding(NavigationManager.Instance.NavMeshGraphs[0], new NodePriorityHeap(), new NodeDictionary(), new EuclideanDistance()));
 
         // NodeArray A* Pathfinding
-        this.Initialize(NavigationManager.Instance.NavMeshGraphs[0], new NodeArrayAStarPathFinding(NavigationManager.Instance.NavMeshGraphs[0], new EuclideanDistance()));
+        this.Initialize(NavigationManager.Instance.NavMeshGraphs[0], new NodeArrayAStarPathFinding(NavigationManager.Instance.NavMeshGraphs[0], new GatewayHeuristic()));
     }
 
     // Update is called once per frame

@@ -20,8 +20,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures.HPStructures
 
         public Cluster Quantize(NavigationGraphNode node)
         {
-            //TODO implement this
-            throw new NotImplementedException();
+            return this.clusters.Find(cluster => cluster.Contains(node.LocalPosition));
         }
 
         public void SaveToAssetDatabase()

@@ -3,6 +3,7 @@ using Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures.GoalBounding;
 using RAIN.Navigation.Graph;
 using RAIN.Navigation.NavMesh;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Assets.Scripts.IAJ.Unity.Pathfinding.GoalBounding
 {
@@ -34,14 +35,81 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.GoalBounding
 
         public void Search(NavigationGraphNode startNode, NodeGoalBounds nodeGoalBounds)
         {
-			//TODO: Implement the algorithm that calculates the goal bounds using a dijkstra
-			//Given that the nodes in the graph correspond to the edges of a polygon, we won't be able to use the vertices of the polygon to update the bounding boxes
+            // initialize attributes
+            this.StartNode = startNode;
+            this.NodeGoalBounds = nodeGoalBounds;
+
+            // get start node record
+            var startNodeRecord = this.NodeRecordArray.GetNodeRecord(this.StartNode);
+
+            // initialize open, closed and add initial node to open
+            this.Open.Initialize();
+            this.Open.AddToOpen(startNodeRecord);
+            this.Closed.Initialize();
+
+            // TODO: is this needed?
+            // initialize start node out connection for all edges
+            var edgeOutConnections = startNode.OutEdgeCount;
+            for (int i = 0; i < edgeOutConnections; i++)
+            {
+                var edgeNode = startNode.EdgeOut(i).ToNode;
+                var edgeNodeRecord = this.NodeRecordArray.GetNodeRecord(edgeNode);
+                edgeNodeRecord.StartNodeOutConnectionIndex = i;
+            }
+
+            // start dijkstra
+            while (this.Open.CountOpen() > 0)
+            {
+                // get best node from open and add to closed
+                var currentNode = this.Open.GetBestAndRemove();
+                this.Closed.AddToClosed(currentNode);
+                // update goal bounds
+                this.NodeGoalBounds.connectionBounds[currentNode.StartNodeOutConnectionIndex].UpdateBounds(currentNode.node.Position);
+
+                // process connections as child nodes
+                var outConnections = currentNode.node.OutEdgeCount;
+                for (int i = 0; i < outConnections; i++)
+                {
+                    // update goal bounds for the edge it came from (StartNodeOutConnectionIndex)
+                    this.ProcessChildNode(currentNode, currentNode.node.EdgeOut(i), currentNode.StartNodeOutConnectionIndex);
+                }
+            }
+
         }
 
        
         protected void ProcessChildNode(NodeRecord parent, NavigationGraphEdge connectionEdge, int connectionIndex)
         {
-			//TODO: Implement this method that processes a child node. Then you can use it in the Search method above.
+            // get child node record from connectionEdge
+            var childNode = connectionEdge.ToNode;
+            var childNodeRecord = this.NodeRecordArray.GetNodeRecord(childNode);
+
+            // if already processed, continue
+            if (this.Closed.SearchInClosed(childNodeRecord) == null) return;
+
+            // calculate new cost
+            var newCost = parent.gValue + (childNode.LocalPosition - parent.node.LocalPosition).magnitude;
+
+            // if already in open set, replace if current cost is lower
+            if (this.Open.SearchInOpen(childNodeRecord) != null)
+            {
+                if (newCost < childNodeRecord.fValue)
+                {
+                    childNodeRecord.fValue = childNodeRecord.gValue = newCost;
+                    childNodeRecord.parent = parent;
+                    // update original out connection
+                    childNodeRecord.StartNodeOutConnectionIndex = connectionIndex;
+                }
+            }
+            // not processed yet, add to open
+            else
+            {
+                childNodeRecord.fValue = childNodeRecord.gValue = newCost;
+                childNodeRecord.parent = parent;
+                this.Open.AddToOpen(childNodeRecord);
+                // update original out connection
+                childNodeRecord.StartNodeOutConnectionIndex = connectionIndex;
+            }
         }
 
         private List<NavigationGraphNode> GetNodesHack(NavMeshPathGraph graph)

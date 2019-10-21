@@ -62,11 +62,62 @@ public class IAJMenuItems  {
         Gateway startGate;
         Gateway endGate;
 
-         var pathfindingManager = new PathfindingManager();
-        pathfindingManager.Initialize(navMesh, new NodeArrayAStarPathFinding(navMesh, new EuclideanDistanceHeuristic()));
+        var pathfindingManager = new PathfindingManager();
+        pathfindingManager.Initialize(navMesh, new NodeArrayAStarPathFinding(navMesh, new EuclideanDistance()));
 
-        //TODO implement the rest of the algorithm here, i.e. build the GatewayDistanceTable
+        // initialize gateway distance table
+        clusterGraph.gatewayDistanceTable = new GatewayDistanceTableRow[gateways.Length];
 
+        // find shortest distance between all gates
+        for (int i = 0; i < gateways.Length; i++)
+        {
+            // create row for current start gateway
+            GatewayDistanceTableRow gateRow = ScriptableObject.CreateInstance<GatewayDistanceTableRow>();
+            gateRow.entries = new GatewayDistanceTableEntry[gateways.Length];
+            startGate = clusterGraph.gateways[i];
+
+            // search for all other gateways
+            for (int j = 0; j < gateways.Length; j++)
+            {
+                // get goal gate
+                endGate = clusterGraph.gateways[j];
+
+                // create entry for each end gateway
+                GatewayDistanceTableEntry gateEntry = ScriptableObject.CreateInstance<GatewayDistanceTableEntry>();
+                gateEntry.startGatewayPosition = startGate.center;
+                gateEntry.endGatewayPosition = endGate.center;
+
+                // if same gateway
+                if (startGate == endGate)
+                {
+                    // TODO: is this needed?
+                    gateEntry.shortestDistance = -1;
+                    // add entry to row
+                    gateRow.entries[j] = gateEntry;
+                    continue;
+                }
+
+                // initialize pathfinding algorithm and start the search
+                pathfindingManager.AStarPathFinding.InitializePathfindingSearch(startGate.Localize(), endGate.Localize());
+                pathfindingManager.AStarPathFinding.Search(out solution);
+
+                if (solution != null)
+                {
+                    // length is cost for goal node
+                    cost = solution.Length;
+                    gateEntry.shortestDistance = cost;
+                }
+                else
+                {
+                    // cannot reach cluster
+                    gateEntry.shortestDistance = -1;
+                }
+                // add entry to row
+                gateRow.entries[j] = gateEntry;
+            }
+            // add row to gateway table
+            clusterGraph.gatewayDistanceTable[i] = gateRow;
+        }
         //create a new asset that will contain the ClusterGraph and save it to disk (DO NOT REMOVE THIS LINE)
         clusterGraph.SaveToAssetDatabase();
     }
