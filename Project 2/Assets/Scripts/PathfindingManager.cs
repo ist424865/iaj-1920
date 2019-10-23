@@ -7,6 +7,8 @@ using RAIN.Navigation.NavMesh;
 using RAIN.Navigation.Graph;
 using UnityEditor;
 using Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures;
+using Assets.Scripts.IAJ.Unity.Movement.DynamicMovement;
+using Assets.Scripts.IAJ.Unity.Utils;
 
 public class PathfindingManager : MonoBehaviour {
 
@@ -21,6 +23,18 @@ public class PathfindingManager : MonoBehaviour {
     public GameObject p5;
     public GameObject p6;
     public GameObject p7;
+
+    // character movement
+    public GameObject characterGameObject;
+    public DynamicCharacter character;
+    private const float MAX_ACCELERATION = 50.0f;
+    private const float MAX_SPEED = 50.0f;
+    private const float DRAG = 0.9f;
+    private const float STOP_RADIUS = 0f;
+    private const float SLOW_RADIUS = 0f;
+    private const float TIME_TO_TARGET = 2.0f;
+    private const float RADIUS = 1.0f;
+    private const float MAX_ROTATION = 8 * MathConstants.MATH_PI;
 
     //private fields for internal use only
     private Vector3 startPosition;
@@ -43,9 +57,19 @@ public class PathfindingManager : MonoBehaviour {
         this.AStarPathFinding.NodesPerFrame = 100;
     }
 
-	// Use this for initialization
-	void Awake ()
+    void Start()
+    {
+        
+    }
+
+    // Use this for initialization
+    void Awake ()
 	{
+        this.character = new DynamicCharacter(characterGameObject)
+        {
+            MaxSpeed = MAX_SPEED,
+            Drag = DRAG,
+        };
         this.currentClickNumber = 1;
 
         // A* Pathfinding
@@ -124,9 +148,29 @@ public class PathfindingManager : MonoBehaviour {
             if(finished)
             {
                 this.AStarPathFinding.InProgress = false;
+
+                // set global path for character to follow
+                this.character.KinematicData.Position = this.currentSolution.GetPosition(0);
+
+                this.character.Movement = new DynamicFollowPath
+                {
+                    Character = this.character.KinematicData,
+                    Path = this.currentSolution,
+                    //DestinationTarget = new DynamicCharacter(this.p1).KinematicData,
+                    MaxAcceleration = MAX_ACCELERATION,
+                    MaxSpeed = MAX_SPEED,
+                    SlowRadius = SLOW_RADIUS,
+                    StopRadius = STOP_RADIUS,
+                };
             }
 	    }
-	}
+
+        //this.character.KinematicData.ApplyWorldLimit(500, 500);
+        if (this.currentSolution != null)
+        {
+            this.character.Update();
+        }
+    }
 
     public void OnGUI()
     {

@@ -6,5 +6,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.Path
     {
         protected Vector3 StartPosition { get; set; }
         protected Vector3 EndPosition { get; set; }
+
+        public abstract float GetOffset(float param);
     }
 }

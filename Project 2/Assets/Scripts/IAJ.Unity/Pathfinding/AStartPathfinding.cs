@@ -227,6 +227,8 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
 
             path.PathNodes.Reverse();
             path.PathPositions.Reverse();
+            // create local paths for solution
+            path.ProcessLocalPaths();
             return path;
 
         }
