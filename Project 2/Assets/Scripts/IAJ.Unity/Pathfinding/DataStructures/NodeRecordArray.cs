@@ -77,6 +77,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
             }
 
             this.SpecialCaseNodes.Clear();
+            // redundant
         }
 
         public void AddToOpen(NodeRecord nodeRecord)
@@ -119,6 +120,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
         public void Replace(NodeRecord nodeToBeReplaced, NodeRecord nodeToReplace)
         {
             // this is useless because the references are the same
+            // overload com valores
         }
 
         public void RemoveFromOpen(NodeRecord nodeRecord)

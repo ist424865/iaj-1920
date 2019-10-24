@@ -90,8 +90,7 @@ public class IAJMenuItems  {
                 // if same gateway
                 if (startGate == endGate)
                 {
-                    // TODO: is this needed?
-                    gateEntry.shortestDistance = -1;
+                    gateEntry.shortestDistance = 0;
                     // add entry to row
                     gateRow.entries[j] = gateEntry;
                     continue;

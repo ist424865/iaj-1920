@@ -21,20 +21,18 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.Path
 
         public override bool PathEnd(float param)
         {
-            //TODO: define constant
-            return param >= 0.85f;
+            return param >= 0.85f; // TODO: tomar conta da distância real e relacionar com slow radius/stop radius
         }
 
         public override float GetParam(Vector3 position, float lastParam)
         {
-            //TODO: how to use lastParam
             float param = MathHelper.closestParamInLineSegmentToPoint(this.StartPosition, this.EndPosition, position);
             return param;
         }
 
         public override float GetOffset(float param)
         {
-            return Math.Abs((this.EndPosition - this.GetPosition(param)).magnitude); 
+            return 1 - param;
         }
     }
 }

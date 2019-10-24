@@ -39,11 +39,6 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.Path
 
             var localPath = this.LocalPaths[localIndex];
 
-            if (localPath.PathEnd(localPath.GetParam(position, localParam)))
-            {
-                return localIndex + 1;
-            }
-
             return localPath.GetParam(position, localParam);
         }
 
@@ -58,7 +53,11 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.Path
 
         public override bool PathEnd(float param)
         {
-            return param > this.LocalPaths.Count - 0.03f;
+            // Local path index is the decimal part (2.45 represents local path 3)
+            int localIndex = (int)Math.Floor(param);
+            var localPath = this.LocalPaths[localIndex];
+
+            return localPath.PathEnd(param - localIndex);
         }
 
         public float GetLocalPathOffset(float param)

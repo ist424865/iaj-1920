@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.IAJ.Unity.Pathfinding.Path;
+﻿using System;
+using Assets.Scripts.IAJ.Unity.Pathfinding.Path;
 using UnityEngine;
 
 namespace Assets.Scripts.IAJ.Unity.Movement.DynamicMovement
@@ -14,7 +15,6 @@ namespace Assets.Scripts.IAJ.Unity.Movement.DynamicMovement
         {
             base.DestinationTarget = new KinematicData();
             this.CurrentParam = 0;
-            this.PathOffset = 0.5f;
         }
 
         public GlobalPath Path { get; set; }
@@ -24,7 +24,20 @@ namespace Assets.Scripts.IAJ.Unity.Movement.DynamicMovement
         public override MovementOutput GetMovement()
         {
             this.CurrentParam = this.Path.GetParam(this.Character.Position, this.CurrentParam);
-            var targetParam = this.CurrentParam + this.Path.GetLocalPathOffset(this.CurrentParam); // TODO: what is offset
+            if (this.Path.PathEnd(this.CurrentParam))
+            {
+                this.CurrentParam = (int) Math.Ceiling(this.CurrentParam);
+                this.PathOffset = 1;
+                // TODO
+                // verificar construção dos localpaths
+            }
+            else
+            {
+                this.PathOffset = this.Path.GetLocalPathOffset(this.CurrentParam);
+            }
+
+            var targetParam = this.CurrentParam + this.PathOffset;
+            Debug.Log(targetParam);
 
             base.DestinationTarget.Position = this.Path.GetPosition(targetParam);
             return base.GetMovement();
