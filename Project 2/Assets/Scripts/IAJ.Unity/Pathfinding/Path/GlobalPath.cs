@@ -12,9 +12,16 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.Path
         public List<Vector3> PathPositions { get; protected set; } 
         public bool IsPartial { get; set; }
         public float Length { get; set; }
-        public List<LocalPath> LocalPaths { get; protected set; } 
+        public List<LocalPath> LocalPaths { get; protected set; }
 
-
+        //Put current path in index 0
+        public void ReplaceSegment(int i)
+        {   if(i < this.PathPositions.Count - 1)
+            {
+                this.LocalPaths[0] = this.LocalPaths[i];
+            }
+            
+        }
         public GlobalPath()
         {
             this.PathNodes = new List<NavigationGraphNode>();
@@ -45,10 +52,11 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.Path
         public override Vector3 GetPosition(float param)
         {
             // Local path index is the decimal part (2.45 represents local path 3)
-            int localIndex = (int) Math.Floor(param);
-            var localPath = this.LocalPaths[localIndex];
-
-            return localPath.GetPosition(param - localIndex);
+            //int localIndex = (int) Math.Floor(param);
+           
+            //current path is alawys on index 0
+            var localPath = this.LocalPaths[0];
+            return localPath.GetPosition(param);
         }
 
         public override bool PathEnd(float param)

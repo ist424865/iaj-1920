@@ -21,7 +21,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.Path
 
         public override bool PathEnd(float param)
         {
-            return param >= 0.85f; // TODO: tomar conta da distância real e relacionar com slow radius/stop radius
+            return param >= 0.18f; // TODO: tomar conta da distância real e relacionar com slow radius/stop radius
         }
 
         public override float GetParam(Vector3 position, float lastParam)
