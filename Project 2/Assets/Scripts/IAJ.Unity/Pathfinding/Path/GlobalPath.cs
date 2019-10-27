@@ -34,7 +34,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.Path
         public override float GetParam(Vector3 position, float previousParam)
         {
             // Local path index is the decimal part (2.45 represents local path number 3)
-            int localIndex = (int) Math.Floor(previousParam);
+            int localIndex = (int)Math.Floor(previousParam);
             var localParam = previousParam - localIndex;
 
             var localPath = this.LocalPaths[localIndex];
@@ -45,7 +45,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.Path
         public override Vector3 GetPosition(float param)
         {
             // Local path index is the decimal part (2.45 represents local path 3)
-            int localIndex = (int) Math.Floor(param);
+            int localIndex = (int)Math.Floor(param);
             var localPath = this.LocalPaths[localIndex];
 
             return localPath.GetPosition(param - localIndex);
@@ -64,7 +64,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.Path
         {
             // Local path index is the decimal part (2.45 represents local path 3)
             int localIndex = (int)Math.Floor(param);
-            return this.LocalPaths[localIndex].GetOffset(param);
+            return this.LocalPaths[localIndex].GetOffset(param - localIndex);
         }
     }
 }

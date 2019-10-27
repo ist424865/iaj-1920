@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Assets.Scripts.IAJ.Unity.Movement.DynamicMovement
 {
-    public class DynamicFollowPath : DynamicArrive
+    public class DynamicFollowPath : DynamicSeek
     {
         public override string Name
         {
@@ -13,7 +13,7 @@ namespace Assets.Scripts.IAJ.Unity.Movement.DynamicMovement
 
         public DynamicFollowPath()
         {
-            base.DestinationTarget = new KinematicData();
+            base.Target = new KinematicData();
             this.CurrentParam = 0;
         }
 
@@ -26,20 +26,16 @@ namespace Assets.Scripts.IAJ.Unity.Movement.DynamicMovement
             this.CurrentParam = this.Path.GetParam(this.Character.Position, this.CurrentParam);
             if (this.Path.PathEnd(this.CurrentParam))
             {
-                this.CurrentParam = (int) Math.Ceiling(this.CurrentParam);
+                this.CurrentParam = (int)Math.Floor(this.CurrentParam) + 1;
                 this.PathOffset = 1;
-                // TODO
-                // verificar construção dos localpaths
             }
             else
             {
-                this.PathOffset = this.Path.GetLocalPathOffset(this.CurrentParam);
+                this.PathOffset = 1;
             }
-
-            var targetParam = this.CurrentParam + this.PathOffset;
-            Debug.Log(targetParam);
-
-            base.DestinationTarget.Position = this.Path.GetPosition(targetParam);
+            //var targetParam = this.CurrentParam + this.PathOffset;
+            var targetParam = (int)Math.Floor(this.CurrentParam) + this.PathOffset;
+            base.Target.Position = this.Path.GetPosition(targetParam);
             return base.GetMovement();
         }
     }

@@ -9,6 +9,7 @@ using UnityEditor;
 using Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures;
 using Assets.Scripts.IAJ.Unity.Movement.DynamicMovement;
 using Assets.Scripts.IAJ.Unity.Utils;
+using Assets.Scripts.IAJ.Unity.Movement;
 
 public class PathfindingManager : MonoBehaviour {
 
@@ -27,8 +28,8 @@ public class PathfindingManager : MonoBehaviour {
     // character movement
     public GameObject characterGameObject;
     public DynamicCharacter character;
-    private const float MAX_ACCELERATION = 50.0f;
-    private const float MAX_SPEED = 50.0f;
+    private const float MAX_ACCELERATION = 20f;
+    private const float MAX_SPEED = 20f;
     private const float DRAG = 0.9f;
     private const float STOP_RADIUS = 0f;
     private const float SLOW_RADIUS = 0f;
@@ -158,9 +159,9 @@ public class PathfindingManager : MonoBehaviour {
                     Path = this.currentSolution,
                     //DestinationTarget = new DynamicCharacter(this.p1).KinematicData,
                     MaxAcceleration = MAX_ACCELERATION,
-                    MaxSpeed = MAX_SPEED,
-                    SlowRadius = SLOW_RADIUS,
-                    StopRadius = STOP_RADIUS,
+                    //MaxSpeed = MAX_SPEED,
+                    //SlowRadius = SLOW_RADIUS,
+                    //StopRadius = STOP_RADIUS,
                 };
             }
 	    }
