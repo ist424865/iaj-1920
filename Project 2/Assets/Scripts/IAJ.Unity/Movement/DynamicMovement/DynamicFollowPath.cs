@@ -22,7 +22,7 @@ namespace Assets.Scripts.IAJ.Unity.Movement.DynamicMovement
         public float PathOffset { get; set; }
         public float CurrentParam { get; set; }
         
-        //Number of line segments traversed 
+        // number of line segments traversed 
         public int Nsegments { get; set; }
 
         public override MovementOutput GetMovement()
@@ -31,7 +31,6 @@ namespace Assets.Scripts.IAJ.Unity.Movement.DynamicMovement
 
             if (this.Path.PathEnd(this.CurrentParam))
             {
-                //this.CurrentParam = (int) Math.Ceiling(this.CurrentParam);
                 this.PathOffset = 1;
                 this.Nsegments++;
                 Path.ReplaceSegment(Nsegments);
@@ -43,7 +42,6 @@ namespace Assets.Scripts.IAJ.Unity.Movement.DynamicMovement
 
             var targetParam = this.CurrentParam + this.PathOffset;
 
-            //Debug.Log("targetParam:" +targetParam);
             base.Target.Position = this.Path.GetPosition(targetParam);
             return base.GetMovement();
         }

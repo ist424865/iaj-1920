@@ -28,14 +28,9 @@ public class PathfindingManager : MonoBehaviour {
     // character movement
     public GameObject characterGameObject;
     public DynamicCharacter character;
-    private const float MAX_ACCELERATION = 40.0f;
+    private const float MAX_ACCELERATION = 80.0f;
     private const float MAX_SPEED = 20.0f;
     private const float DRAG = 0.9f;
-    private const float STOP_RADIUS = 1f;
-    private const float SLOW_RADIUS = 0f;
-    private const float TIME_TO_TARGET = 5.0f;
-    private const float RADIUS = 5.0f;
-    private const float MAX_ROTATION = 8 * MathConstants.MATH_PI;
 
     //private fields for internal use only
     private Vector3 startPosition;
@@ -152,16 +147,13 @@ public class PathfindingManager : MonoBehaviour {
 
                 // set global path for character to follow
                 this.character.KinematicData.Position = this.startPosition;
+                this.character.KinematicData.velocity = Vector3.zero;
 
                 this.character.Movement = new DynamicFollowPath
                 {
                     Character = this.character.KinematicData,
                     Path = this.currentSolution,
-                    //DestinationTarget = new DynamicCharacter(this.p1).KinematicData,
                     MaxAcceleration = MAX_ACCELERATION,
-                    //MaxSpeed = MAX_SPEED,
-                    //SlowRadius = SLOW_RADIUS,
-                    //StopRadius = STOP_RADIUS,
                 };
             }
 	    }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Assets.Scripts.IAJ.Unity.Utils;
 using RAIN.Navigation.Graph;
 using UnityEngine;
 
@@ -10,6 +11,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures.HPStructures
         public Vector3 min;
         public Vector3 max;
         public List<Gateway> gateways;
+        public Vector3 margin = new Vector3(0, 0, 0);
 
         public Cluster()
         {
@@ -27,14 +29,9 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures.HPStructures
         public bool Contains(Vector3 position)
         {
             // The +- 2 is a correction for margin error
-            if     (position.x >= min.x - 2 && position.x <= max.x + 2)
-                if (position.z >= min.z - 2 && position.z <= max.z + 2)
-                {
-                    return true;
-                }
-            return false;
-        }
+            return MathHelper.PointInsideBoundingBox(position, min - margin, max + margin);
 
+        }
         public Vector3 Localize()
         {
             return this.center;

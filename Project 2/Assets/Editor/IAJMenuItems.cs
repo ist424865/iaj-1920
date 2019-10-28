@@ -62,14 +62,13 @@ public class IAJMenuItems  {
         Gateway startGate;
         Gateway endGate;
 
-        var pathfindingManager = new PathfindingManager();
-        pathfindingManager.Initialize(navMesh, new NodeArrayAStarPathFinding(navMesh, new EuclideanDistance()));
+        var pathfindingAlgorithm = new NodeArrayAStarPathFinding(navMesh, new EuclideanDistance());
 
         // initialize gateway distance table
         clusterGraph.gatewayDistanceTable = new GatewayDistanceTableRow[gateways.Length];
 
         // find shortest distance between all gates
-        for (int i = 0; i < gateways.Length; i++)
+        for (int i = 0; i < clusterGraph.gateways.Count; i++)
         {
             // create row for current start gateway
             GatewayDistanceTableRow gateRow = ScriptableObject.CreateInstance<GatewayDistanceTableRow>();
@@ -77,18 +76,18 @@ public class IAJMenuItems  {
             startGate = clusterGraph.gateways[i];
 
             // search for all other gateways
-            for (int j = 0; j < gateways.Length; j++)
+            for (int j = 0; j < clusterGraph.gateways.Count; j++)
             {
                 // get goal gate
                 endGate = clusterGraph.gateways[j];
 
                 // create entry for each end gateway
                 GatewayDistanceTableEntry gateEntry = ScriptableObject.CreateInstance<GatewayDistanceTableEntry>();
-                gateEntry.startGatewayPosition = startGate.center;
-                gateEntry.endGatewayPosition = endGate.center;
+                gateEntry.startGatewayPosition = startGate.Localize();
+                gateEntry.endGatewayPosition = endGate.Localize();
 
                 // if same gateway
-                if (startGate == endGate)
+                if (i == j)
                 {
                     gateEntry.shortestDistance = 0;
                     // add entry to row
@@ -97,10 +96,10 @@ public class IAJMenuItems  {
                 }
 
                 // initialize pathfinding algorithm and start the search
-                pathfindingManager.AStarPathFinding.InitializePathfindingSearch(startGate.Localize(), endGate.Localize());
-                pathfindingManager.AStarPathFinding.Search(out solution);
+                pathfindingAlgorithm.InitializePathfindingSearch(startGate.Localize(), endGate.Localize());
+                bool finished = pathfindingAlgorithm.Search(out solution);
 
-                if (solution != null)
+                if (finished && solution != null)
                 {
                     // length is cost for goal node
                     cost = solution.Length;
@@ -109,7 +108,7 @@ public class IAJMenuItems  {
                 else
                 {
                     // cannot reach cluster
-                    gateEntry.shortestDistance = -1;
+                    gateEntry.shortestDistance = float.MaxValue;
                 }
                 // add entry to row
                 gateRow.entries[j] = gateEntry;
@@ -117,10 +116,28 @@ public class IAJMenuItems  {
             // add row to gateway table
             clusterGraph.gatewayDistanceTable[i] = gateRow;
         }
+
+        var nodes = GetNodesHack(navMesh);
+
+        // optimization: save cluster of each node to optimize quantize
+        clusterGraph.clusterOfNode = new Cluster[nodes.Count];
+        for (int i = 0; i < nodes.Count; i++)
+        {
+            var nodePosition = nodes[i].LocalPosition;
+            for (int j = 0; j < clusterGraph.clusters.Count; j++)
+            {
+                var currentCluster = clusterGraph.clusters[j];
+                if (MathHelper.PointInsideBoundingBox(nodePosition, currentCluster.min, currentCluster.max))
+                {
+                    clusterGraph.clusterOfNode[nodes[i].NodeIndex] = currentCluster;
+                    break;
+                }
+            }
+        }
+
         //create a new asset that will contain the ClusterGraph and save it to disk (DO NOT REMOVE THIS LINE)
         clusterGraph.SaveToAssetDatabase();
     }
-
 
     private static List<NavigationGraphNode> GetNodesHack(NavMeshPathGraph graph)
     {

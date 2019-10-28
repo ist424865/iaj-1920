@@ -35,14 +35,13 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.Path
             for (int i = 0; i < this.PathPositions.Count - 1; i++)
             {
                 // discard points too close and create a largest path
-                if ((currentStart - this.PathPositions[i]).magnitude < 2.0f) continue;
+                if ((currentStart - this.PathPositions[i]).magnitude < 3.5f) continue;
                 var localPath = new LineSegmentPath(currentStart, this.PathPositions[i + 1]);
                 this.LocalPaths.Add(localPath);
                 currentStart = this.PathPositions[i];
             }
-            // TODO: não adiciona o final
-            //var lastPath = new LineSegmentPath(this.PathPositions[this.PathPositions.Count - 2], this.PathPositions[this.PathPositions.Count - 1]);
-            //this.LocalPaths.Add(lastPath);
+            var lastPath = new LineSegmentPath(this.PathPositions[this.PathPositions.Count - 1], this.PathPositions[this.PathPositions.Count - 1]);
+            this.LocalPaths.Add(lastPath);
         }
 
         public override float GetParam(Vector3 position, float previousParam)
@@ -57,11 +56,8 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.Path
         }
 
         public override Vector3 GetPosition(float param)
-        {
-            // Local path index is the decimal part (2.45 represents local path 3)
-            //int localIndex = (int) Math.Floor(param);
-           
-            //current path is alawys on index 0
+        {           
+            //current path is always at index 0
             var localPath = this.LocalPaths[0];
             return localPath.GetPosition(param);
         }

@@ -11,6 +11,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures.HPStructures
         public List<Cluster> clusters;
         public List<Gateway> gateways;
         public GatewayDistanceTableRow[] gatewayDistanceTable;
+        public Cluster[] clusterOfNode;
 
         public ClusterGraph()
         {
@@ -20,7 +21,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures.HPStructures
 
         public Cluster Quantize(NavigationGraphNode node)
         {
-            return this.clusters.Find(cluster => cluster.Contains(node.LocalPosition));
+            return this.clusterOfNode[node.NodeIndex];
         }
 
         public void SaveToAssetDatabase()

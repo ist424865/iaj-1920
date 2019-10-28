@@ -20,10 +20,10 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.Heuristics
             Cluster endCluster = clusterGraph.Quantize(goalNode);
 
             // if node and goal node are in the same room/cluster
-            if (startCluster == endCluster)
+            if (startCluster == null || endCluster == null || startCluster == endCluster)
             {
                 // return a normal distance heuristic (euclidean)
-                return this.EuclideanDistance(node.Position, goalNode.Position);
+                return this.EuclideanDistance(node.LocalPosition, goalNode.LocalPosition);
             }
             // if not, we have to cross gateways
             else
@@ -52,11 +52,11 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.Heuristics
                         // current h value
                         float value =
                             // h'(n, Gi) (distance from start node to start gateway)
-                            this.EuclideanDistance(node.Position, startGateways[i].center) +
+                            this.EuclideanDistance(node.LocalPosition, startGateways[i].center) +
                             // H(Gi, Gj) (distance from gateway i to gateway j)
                             entry.shortestDistance +
                             // h'(Gj, g) (distance from end gateway to end node)
-                            this.EuclideanDistance(endGateways[j].center, goalNode.Position);
+                            this.EuclideanDistance(endGateways[j].center, goalNode.LocalPosition);
 
                         if (value < heuristicValue) heuristicValue = value;
                     }
