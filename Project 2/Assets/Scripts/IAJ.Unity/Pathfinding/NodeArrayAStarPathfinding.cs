@@ -40,7 +40,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
             }
 
             // calculate g, h and f values of child node
-            float g = bestNode.gValue + (childNode.LocalPosition - bestNode.node.LocalPosition).magnitude;
+            float g = bestNode.gValue + connectionEdge.Cost;
             float h = this.Heuristic.H(childNode, this.GoalNode);
             float f = g + h;
 
@@ -51,7 +51,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
                 this.Open.AddToOpen(childNodeRecord);
             }
             // if child node is in open with higher F-value
-            else if (childNodeRecord.status == NodeStatus.Open && childNodeRecord.fValue >= f) // solve ties by ranking better new nodes
+            else if (childNodeRecord.status == NodeStatus.Open && childNodeRecord.fValue > f) // solve ties by ranking better new nodes
             {
                 // TODO: replace in Open is needed? Is this correct?
                 // replace here is replacing the values as the node reference is the same

@@ -116,6 +116,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
                 if (this.Open.CountOpen() == 0)
                 {
                     solution = null;
+                    CleanUp();
                     return true;
                 }
 
@@ -133,6 +134,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
                 {
                     solution = this.CalculateSolution(currentNode, false); // solution is complete
                     this.TotalProcessingTime = Time.time - this.StartTime;
+                    CleanUp();
                     return true;
                 }
 
