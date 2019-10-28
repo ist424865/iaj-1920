@@ -52,11 +52,11 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.Heuristics
                         // current h value
                         float value =
                             // h'(n, Gi) (distance from start node to start gateway)
-                            this.EuclideanDistance(node.LocalPosition, startGateways[i].center) +
+                            this.EuclideanDistance(node.LocalPosition, startGateways[i].Localize()) +
                             // H(Gi, Gj) (distance from gateway i to gateway j)
                             entry.shortestDistance +
                             // h'(Gj, g) (distance from end gateway to end node)
-                            this.EuclideanDistance(endGateways[j].center, goalNode.LocalPosition);
+                            this.EuclideanDistance(endGateways[j].Localize(), goalNode.LocalPosition);
 
                         if (value < heuristicValue) heuristicValue = value;
                     }

@@ -65,14 +65,14 @@ public class IAJMenuItems  {
         var pathfindingAlgorithm = new NodeArrayAStarPathFinding(navMesh, new EuclideanDistance());
 
         // initialize gateway distance table
-        clusterGraph.gatewayDistanceTable = new GatewayDistanceTableRow[gateways.Length];
+        clusterGraph.gatewayDistanceTable = new GatewayDistanceTableRow[clusterGraph.gateways.Count];
 
         // find shortest distance between all gates
         for (int i = 0; i < clusterGraph.gateways.Count; i++)
         {
             // create row for current start gateway
             GatewayDistanceTableRow gateRow = ScriptableObject.CreateInstance<GatewayDistanceTableRow>();
-            gateRow.entries = new GatewayDistanceTableEntry[gateways.Length];
+            gateRow.entries = new GatewayDistanceTableEntry[clusterGraph.gateways.Count];
             startGate = clusterGraph.gateways[i];
 
             // search for all other gateways

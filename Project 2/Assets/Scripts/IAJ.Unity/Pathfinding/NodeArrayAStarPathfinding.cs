@@ -56,6 +56,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
                 // TODO: replace in Open is needed? Is this correct?
                 // replace here is replacing the values as the node reference is the same
                 this.UpdateNodeRecord(childNodeRecord, bestNode, g, h, f);
+                this.Open.Replace(childNodeRecord, childNodeRecord);
             }
             // if child is in closed with higher F-value
             else if (childNodeRecord.status == NodeStatus.Closed && childNodeRecord.fValue > f)

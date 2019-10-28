@@ -110,8 +110,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures
 
         public void Replace(NodeRecord nodeToBeReplaced, NodeRecord nodeToReplace)
         {
-            // this is useless because the references are the same
-            // overload com valores
+            this.Open.Replace(nodeToBeReplaced, nodeToReplace);
         }
 
         public void RemoveFromOpen(NodeRecord nodeRecord)
