@@ -28,13 +28,13 @@ public class PathfindingManager : MonoBehaviour {
     // character movement
     public GameObject characterGameObject;
     public DynamicCharacter character;
-    private const float MAX_ACCELERATION = 20f;
-    private const float MAX_SPEED = 20f;
+    private const float MAX_ACCELERATION = 40.0f;
+    private const float MAX_SPEED = 20.0f;
     private const float DRAG = 0.9f;
-    private const float STOP_RADIUS = 0f;
+    private const float STOP_RADIUS = 1f;
     private const float SLOW_RADIUS = 0f;
-    private const float TIME_TO_TARGET = 2.0f;
-    private const float RADIUS = 1.0f;
+    private const float TIME_TO_TARGET = 5.0f;
+    private const float RADIUS = 5.0f;
     private const float MAX_ROTATION = 8 * MathConstants.MATH_PI;
 
     //private fields for internal use only
@@ -151,7 +151,7 @@ public class PathfindingManager : MonoBehaviour {
                 this.AStarPathFinding.InProgress = false;
 
                 // set global path for character to follow
-                this.character.KinematicData.Position = this.currentSolution.GetPosition(0);
+                this.character.KinematicData.Position = this.startPosition;
 
                 this.character.Movement = new DynamicFollowPath
                 {

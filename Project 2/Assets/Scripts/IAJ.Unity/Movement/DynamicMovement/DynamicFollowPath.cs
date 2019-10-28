@@ -15,26 +15,35 @@ namespace Assets.Scripts.IAJ.Unity.Movement.DynamicMovement
         {
             base.Target = new KinematicData();
             this.CurrentParam = 0;
+            this.Nsegments = 0;
         }
 
         public GlobalPath Path { get; set; }
         public float PathOffset { get; set; }
         public float CurrentParam { get; set; }
+        
+        //Number of line segments traversed 
+        public int Nsegments { get; set; }
 
         public override MovementOutput GetMovement()
         {
             this.CurrentParam = this.Path.GetParam(this.Character.Position, this.CurrentParam);
+
             if (this.Path.PathEnd(this.CurrentParam))
             {
-                this.CurrentParam = (int)Math.Floor(this.CurrentParam) + 1;
+                //this.CurrentParam = (int) Math.Ceiling(this.CurrentParam);
                 this.PathOffset = 1;
+                this.Nsegments++;
+                Path.ReplaceSegment(Nsegments);
             }
             else
             {
-                this.PathOffset = 1;
+                this.PathOffset = this.Path.GetLocalPathOffset(this.CurrentParam);
             }
-            //var targetParam = this.CurrentParam + this.PathOffset;
-            var targetParam = (int)Math.Floor(this.CurrentParam) + this.PathOffset;
+
+            var targetParam = this.CurrentParam + this.PathOffset;
+
+            //Debug.Log("targetParam:" +targetParam);
             base.Target.Position = this.Path.GetPosition(targetParam);
             return base.GetMovement();
         }

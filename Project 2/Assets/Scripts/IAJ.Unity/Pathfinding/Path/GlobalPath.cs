@@ -12,9 +12,16 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.Path
         public List<Vector3> PathPositions { get; protected set; } 
         public bool IsPartial { get; set; }
         public float Length { get; set; }
-        public List<LocalPath> LocalPaths { get; protected set; } 
+        public List<LocalPath> LocalPaths { get; protected set; }
 
-
+        //Put current path in index 0
+        public void ReplaceSegment(int i)
+        {   if(i < this.LocalPaths.Count - 1)
+            {
+                this.LocalPaths[0] = this.LocalPaths[i];
+            }
+            
+        }
         public GlobalPath()
         {
             this.PathNodes = new List<NavigationGraphNode>();
@@ -24,17 +31,24 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.Path
 
         public void ProcessLocalPaths()
         {
+            Vector3 currentStart = Vector3.zero;
             for (int i = 0; i < this.PathPositions.Count - 1; i++)
             {
-                var localPath = new LineSegmentPath(this.PathPositions[i], this.PathPositions[i + 1]);
+                // discard points too close and create a largest path
+                if ((currentStart - this.PathPositions[i]).magnitude < 2.0f) continue;
+                var localPath = new LineSegmentPath(currentStart, this.PathPositions[i + 1]);
                 this.LocalPaths.Add(localPath);
+                currentStart = this.PathPositions[i];
             }
+            // TODO: não adiciona o final
+            //var lastPath = new LineSegmentPath(this.PathPositions[this.PathPositions.Count - 2], this.PathPositions[this.PathPositions.Count - 1]);
+            //this.LocalPaths.Add(lastPath);
         }
 
         public override float GetParam(Vector3 position, float previousParam)
         {
             // Local path index is the decimal part (2.45 represents local path number 3)
-            int localIndex = (int)Math.Floor(previousParam);
+            int localIndex = (int) Math.Floor(previousParam);
             var localParam = previousParam - localIndex;
 
             var localPath = this.LocalPaths[localIndex];
@@ -45,10 +59,11 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.Path
         public override Vector3 GetPosition(float param)
         {
             // Local path index is the decimal part (2.45 represents local path 3)
-            int localIndex = (int)Math.Floor(param);
-            var localPath = this.LocalPaths[localIndex];
-
-            return localPath.GetPosition(param - localIndex);
+            //int localIndex = (int) Math.Floor(param);
+           
+            //current path is alawys on index 0
+            var localPath = this.LocalPaths[0];
+            return localPath.GetPosition(param);
         }
 
         public override bool PathEnd(float param)
@@ -64,7 +79,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.Path
         {
             // Local path index is the decimal part (2.45 represents local path 3)
             int localIndex = (int)Math.Floor(param);
-            return this.LocalPaths[localIndex].GetOffset(param - localIndex);
+            return this.LocalPaths[localIndex].GetOffset(param);
         }
     }
 }
