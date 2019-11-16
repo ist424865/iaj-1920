@@ -21,7 +21,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.GOB
         public Action[] BestActionSequence { get; private set; }
         public Action BestAction { get; private set; }
         public float BestDiscontentmentValue { get; private set; }
-        private int CurrentDepth {  get; set; }
+        private int CurrentDepth { get; set; }
 
         public DepthLimitedGOAPDecisionMaking(CurrentStateWorldModel currentStateWorldModel, List<Action> actions, List<Goal> goals)
         {
@@ -66,6 +66,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.GOB
                         this.BestAction = this.ActionPerLevel[0];
                     }
                     this.CurrentDepth -= 1;
+                    this.TotalActionCombinationsProcessed++;
                     continue;
                 }
 
@@ -79,6 +80,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.GOB
                     // TODO: save best actions to help debug
                     BestActionSequence[CurrentDepth] = nextAction;
                     this.CurrentDepth++;
+                    processedActions++;
                 }
                 else
                 {

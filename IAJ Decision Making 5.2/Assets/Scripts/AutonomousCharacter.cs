@@ -11,7 +11,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Assets.Scripts.IAJ.Unity.Pathfinding.DataStructures.HPStructures;
 using Assets.Scripts.IAJ.Unity.Pathfinding.Path;
-//using Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS;
+using Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS;
 using Assets.Scripts.GameManager;
 
 namespace Assets.Scripts
@@ -56,14 +56,14 @@ namespace Assets.Scripts
         private GlobalPath currentSolution;
         private GlobalPath currentSmoothedSolution;
         private NavMeshPathGraph navMesh;
-        
+
         private bool draw;
         private float nextUpdateTime = 0.0f;
         private float previousGold = 0.0f;
         private int previousLevel = 1;
         private Vector3 previousTarget;
 
-		private Animator characterAnimator;
+        private Animator characterAnimator;
 
 
 
@@ -74,7 +74,7 @@ namespace Assets.Scripts
             this.AStarPathFinding = pathfindingAlgorithm;
             this.AStarPathFinding.NodesPerSearch = 100;
 
-			this.characterAnimator = this.GetComponentInChildren<Animator> ();
+            this.characterAnimator = this.GetComponentInChildren<Animator>();
         }
 
         public void Start()
@@ -120,8 +120,8 @@ namespace Assets.Scripts
 
             this.Actions = new List<Action>();
 
-            //this.Actions.Add(new ShieldOfFaith(this));
- 
+            this.Actions.Add(new ShieldOfFaith(this));
+
             foreach (var chest in GameObject.FindGameObjectsWithTag("Chest"))
             {
                 this.Actions.Add(new PickUpChest(this, chest));
@@ -129,18 +129,18 @@ namespace Assets.Scripts
 
             foreach (var potion in GameObject.FindGameObjectsWithTag("ManaPotion"))
             {
-                //this.Actions.Add(new GetManaPotion(this, potion));
+                this.Actions.Add(new GetManaPotion(this, potion));
             }
 
             foreach (var potion in GameObject.FindGameObjectsWithTag("HealthPotion"))
             {
-                //this.Actions.Add(new GetHealthPotion(this, potion));
+                this.Actions.Add(new GetHealthPotion(this, potion));
             }
 
             foreach (var enemy in GameObject.FindGameObjectsWithTag("Skeleton"))
             {
                 this.Actions.Add(new SwordAttack(this, enemy));
-                //this.Actions.Add(new DivineSmite(this, enemy));
+                this.Actions.Add(new DivineSmite(this, enemy));
             }
 
             foreach (var enemy in GameObject.FindGameObjectsWithTag("Orc"))
@@ -154,7 +154,7 @@ namespace Assets.Scripts
             }
 
             var worldModel = new CurrentStateWorldModel(this.GameManager, this.Actions, this.Goals);
-            this.GOAPDecisionMaking = new DepthLimitedGOAPDecisionMaking(worldModel,this.Actions,this.Goals);
+            this.GOAPDecisionMaking = new DepthLimitedGOAPDecisionMaking(worldModel, this.Actions, this.Goals);
 
             this.DiaryText.text = "My Diary \n I awoke. What a wonderful day to kill Monsters!\n";
         }
@@ -175,13 +175,13 @@ namespace Assets.Scripts
                 this.SurviveGoal.InsistenceValue = this.GameManager.characterData.MaxHP - this.GameManager.characterData.HP;
 
                 this.BeQuickGoal.InsistenceValue += DECISION_MAKING_INTERVAL * this.BeQuickGoal.ChangeRate;
-                if(this.BeQuickGoal.InsistenceValue > 10.0f)
+                if (this.BeQuickGoal.InsistenceValue > 10.0f)
                 {
                     this.BeQuickGoal.InsistenceValue = 10.0f;
                 }
 
                 this.GainLevelGoal.InsistenceValue += this.GainLevelGoal.ChangeRate; //increase in goal over time
-                if(this.GameManager.characterData.Level > this.previousLevel)
+                if (this.GameManager.characterData.Level > this.previousLevel)
                 {
                     this.GainLevelGoal.InsistenceValue -= this.GameManager.characterData.Level - this.previousLevel;
                     this.previousLevel = this.GameManager.characterData.Level;
@@ -214,9 +214,9 @@ namespace Assets.Scripts
 
             this.UpdateDLGOAP();
 
-            if(this.CurrentAction != null)
+            if (this.CurrentAction != null)
             {
-                if(this.CurrentAction.CanExecute())
+                if (this.CurrentAction.CanExecute())
                 {
                     this.CurrentAction.Execute();
                 }
@@ -230,10 +230,10 @@ namespace Assets.Scripts
                 {
                     //lets smooth out the Path
                     this.startPosition = this.Character.KinematicData.position;
-					//this.currentSolution.P
-					this.currentSmoothedSolution = this.smoothPath(this.Character.KinematicData.position, this.currentSolution);
+                    //this.currentSolution.P
+                    this.currentSmoothedSolution = this.smoothPath(this.Character.KinematicData.position, this.currentSolution);
                     this.currentSmoothedSolution.CalculateLocalPathsFromPathPositions(this.Character.KinematicData.position);
-					this.Character.Movement = new DynamicFollowPath(this.Character.KinematicData, this.currentSmoothedSolution)
+                    this.Character.Movement = new DynamicFollowPath(this.Character.KinematicData, this.currentSmoothedSolution)
                     {
                         MaxAcceleration = 200.0f,
                         MaxSpeed = 40.0f
@@ -243,18 +243,18 @@ namespace Assets.Scripts
 
 
             this.Character.Update();
-			//manage the character's animation
-			if (this.Character.KinematicData.velocity.sqrMagnitude > 0.1) 
-			{
-				this.characterAnimator.SetBool ("Walking", true);
-			} 
-			else 
-			{
-				this.characterAnimator.SetBool ("Walking", false);
-			}
+            //manage the character's animation
+            if (this.Character.KinematicData.velocity.sqrMagnitude > 0.1)
+            {
+                this.characterAnimator.SetBool("Walking", true);
+            }
+            else
+            {
+                this.characterAnimator.SetBool("Walking", false);
+            }
         }
 
- 
+
         private void UpdateDLGOAP()
         {
             bool newDecision = false;
@@ -296,38 +296,38 @@ namespace Assets.Scripts
         {
             //if the targetPosition received is the same as a previous target, then this a request for the same target
             //no need to redo the pathfinding search
-            if(!this.previousTarget.Equals(targetPosition))
+            if (!this.previousTarget.Equals(targetPosition))
             {
                 this.AStarPathFinding.InitializePathfindingSearch(this.Character.KinematicData.position, targetPosition);
                 this.previousTarget = targetPosition;
             }
         }
 
-		public void OnDrawGizmos()
-		{
-			if (this.draw)
-			{
-				//draw the current Solution Path if any (for debug purposes)
-				if (this.currentSolution != null)
-				{
-					var previousPosition = this.startPosition;
-					foreach (var pathPosition in this.currentSolution.PathPositions)
-					{
-						Debug.DrawLine(previousPosition, pathPosition, Color.red);
-						previousPosition = pathPosition;
-					}
+        public void OnDrawGizmos()
+        {
+            if (this.draw)
+            {
+                //draw the current Solution Path if any (for debug purposes)
+                if (this.currentSolution != null)
+                {
+                    var previousPosition = this.startPosition;
+                    foreach (var pathPosition in this.currentSolution.PathPositions)
+                    {
+                        Debug.DrawLine(previousPosition, pathPosition, Color.red);
+                        previousPosition = pathPosition;
+                    }
 
-					previousPosition = this.startPosition;
-					foreach (var pathPosition in this.currentSmoothedSolution.PathPositions)
-					{
-						Debug.DrawLine(previousPosition, pathPosition, Color.green);
-						previousPosition = pathPosition;
-					}
-				}
+                    previousPosition = this.startPosition;
+                    foreach (var pathPosition in this.currentSmoothedSolution.PathPositions)
+                    {
+                        Debug.DrawLine(previousPosition, pathPosition, Color.green);
+                        previousPosition = pathPosition;
+                    }
+                }
 
 
-			}
-		}
+            }
+        }
 
         public float CalculateDiscontentment()
         {
@@ -342,27 +342,30 @@ namespace Assets.Scripts
 
 
         protected GlobalPath smoothPath(Vector3 position, GlobalPath actual)
-		{
-			var smoothedPath = new GlobalPath ();
-			smoothedPath.PathPositions.Add (position);
-			smoothedPath.PathPositions.AddRange (actual.PathPositions);
+        {
+            var smoothedPath = new GlobalPath();
+            smoothedPath.PathPositions.Add(position);
+            smoothedPath.PathPositions.AddRange(actual.PathPositions);
 
-			int i = 0;
-			while (i < smoothedPath.PathPositions.Count - 2) {
-				if (walkable(smoothedPath.PathPositions[i], smoothedPath.PathPositions[i + 2])) {
-					smoothedPath.PathPositions.RemoveAt(i + 1);
-				}
-				else {
-					i++;
-				}
-			}
-			return smoothedPath;
-		}
+            int i = 0;
+            while (i < smoothedPath.PathPositions.Count - 2)
+            {
+                if (walkable(smoothedPath.PathPositions[i], smoothedPath.PathPositions[i + 2]))
+                {
+                    smoothedPath.PathPositions.RemoveAt(i + 1);
+                }
+                else
+                {
+                    i++;
+                }
+            }
+            return smoothedPath;
+        }
 
-		protected bool walkable(Vector3 p1, Vector3 p2)
-		{
-			Vector3 direction = p2 - p1;
-			return !Physics.Raycast(p1, direction, direction.magnitude);
-		}
+        protected bool walkable(Vector3 p1, Vector3 p2)
+        {
+            Vector3 direction = p2 - p1;
+            return !Physics.Raycast(p1, direction, direction.magnitude);
+        }
     }
 }
