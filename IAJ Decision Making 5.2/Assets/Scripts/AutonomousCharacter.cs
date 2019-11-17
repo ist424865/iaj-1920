@@ -49,6 +49,7 @@ namespace Assets.Scripts
         public Action CurrentAction { get; private set; }
         public DynamicCharacter Character { get; private set; }
         public DepthLimitedGOAPDecisionMaking GOAPDecisionMaking { get; set; }
+        public MCTS MCTSDecisionMaking { get; set; }
         public AStarPathfinding AStarPathFinding;
 
         //private fields for internal use only
@@ -154,7 +155,8 @@ namespace Assets.Scripts
             }
 
             var worldModel = new CurrentStateWorldModel(this.GameManager, this.Actions, this.Goals);
-            this.GOAPDecisionMaking = new DepthLimitedGOAPDecisionMaking(worldModel, this.Actions, this.Goals);
+            //this.GOAPDecisionMaking = new DepthLimitedGOAPDecisionMaking(worldModel, this.Actions, this.Goals);
+            this.MCTSDecisionMaking = new MCTS(worldModel);
 
             this.DiaryText.text = "My Diary \n I awoke. What a wonderful day to kill Monsters!\n";
         }
@@ -209,10 +211,14 @@ namespace Assets.Scripts
 
                 //initialize Decision Making Proccess
                 this.CurrentAction = null;
-                this.GOAPDecisionMaking.InitializeDecisionMakingProcess();
+
+                //this.GOAPDecisionMaking.InitializeDecisionMakingProcess();
+                this.MCTSDecisionMaking.InitializeMCTSearch();
+
             }
 
-            this.UpdateDLGOAP();
+            //this.UpdateDLGOAP();
+            this.UpdateMCTS();
 
             if (this.CurrentAction != null)
             {
@@ -254,6 +260,41 @@ namespace Assets.Scripts
             }
         }
 
+        private void UpdateMCTS()
+        {
+            bool newDecision = false;
+
+            if (this.MCTSDecisionMaking.InProgress)
+            {
+                // choose an action using the MCTS Decision Making Process
+                var action = this.MCTSDecisionMaking.Run();
+                if (action != null)
+                {
+                    this.CurrentAction = action;
+                    newDecision = true;
+                }
+            }
+
+            this.TotalProcessingTimeText.text = "Process. Time: " + this.MCTSDecisionMaking.TotalProcessingTime.ToString("F");
+
+            if (this.MCTSDecisionMaking.BestFirstChild.Action != null)
+            {
+                if (newDecision)
+                {
+                    this.DiaryText.text += Time.time + " I decided to " + this.MCTSDecisionMaking.BestFirstChild.Action.Name + "\n";
+                }
+                var actionText = "";
+                foreach (var action in this.MCTSDecisionMaking.BestActionSequence)
+                {
+                    actionText += "\n" + action.Name;
+                }
+                this.BestActionText.text = "Best Action Sequence: " + actionText;
+            }
+            else
+            {
+                this.BestActionText.text = "Best Action Sequence:\nNone";
+            }
+        }
 
         private void UpdateDLGOAP()
         {

@@ -64,6 +64,8 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.GOB
                     {
                         this.BestDiscontentmentValue = currentValue;
                         this.BestAction = this.ActionPerLevel[0];
+                        // save best actions to help debug
+                        this.BestActionSequence = this.ActionPerLevel.Clone() as Action[];
                     }
                     this.CurrentDepth -= 1;
                     this.TotalActionCombinationsProcessed++;
@@ -77,7 +79,6 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.GOB
                     Models[CurrentDepth + 1] = Models[CurrentDepth].GenerateChildWorldModel();
                     nextAction.ApplyActionEffects(Models[CurrentDepth + 1]);
                     ActionPerLevel[CurrentDepth] = nextAction;
-                    // TODO: save best actions to help debug
                     BestActionSequence[CurrentDepth] = nextAction;
                     this.CurrentDepth++;
                     processedActions++;

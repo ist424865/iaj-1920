@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Action = Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.Action;
+using System.Linq;
 
 namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
 {
@@ -28,8 +29,8 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
         protected CurrentStateWorldModel CurrentStateWorldModel { get; set; }
         protected MCTSNode InitialNode { get; set; }
         protected System.Random RandomGenerator { get; set; }
-        
-        
+
+
 
         public MCTS(CurrentStateWorldModel currentStateWorldModel)
         {
@@ -69,8 +70,19 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
 
             this.CurrentIterationsInFrame = 0;
 
-            //TODO: implement
-            throw new NotImplementedException();
+            while (this.CurrentIterationsInFrame < this.MaxIterationsProcessedPerFrame && this.CurrentIterations < this.MaxIterations)
+            {
+
+                selectedNode = Selection(this.InitialNode);
+                reward = Playout(selectedNode.State);
+                Backpropagate(selectedNode, reward);
+                this.CurrentIterationsInFrame++;
+                this.CurrentIterations++;
+            }
+
+            this.TotalProcessingTime += Time.realtimeSinceStartup - startTime;
+
+            return BestFinalAction(InitialNode);
         }
 
         protected MCTSNode Selection(MCTSNode initialNode)
@@ -79,42 +91,114 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
             MCTSNode currentNode = initialNode;
             MCTSNode bestChild;
 
+            while (!currentNode.State.IsTerminal())
+            {
+                nextAction = currentNode.State.GetNextAction();
+                if (nextAction != null)
+                {
+                    return Expand(currentNode, nextAction);
+                }
+                else
+                {
+                    currentNode = BestChild(currentNode);
+                }
+            }
 
-            //TODO: implement
-            throw new NotImplementedException();
+            bestChild = currentNode;
+            return bestChild;
         }
 
         protected virtual Reward Playout(WorldModel initialPlayoutState)
         {
-            //TODO: implement
-            throw new NotImplementedException();
+            var currentState = initialPlayoutState.GenerateChildWorldModel();
+
+            // while s is nonterminal do
+            while (!currentState.IsTerminal())
+            {
+                // chose a from Actions(s) uniformly at random
+                var totalActions = currentState.GetExecutableActions();
+                var randomAction = totalActions[RandomGenerator.Next(totalActions.Length)];
+
+                // s <- Result(s,a)
+                randomAction.ApplyActionEffects(currentState);
+            }
+
+            // return reward for state s
+            var reward = new Reward();
+            reward.Value = currentState.GetScore();
+            return reward;
         }
 
         protected virtual void Backpropagate(MCTSNode node, Reward reward)
         {
-            //TODO: implement
-            throw new NotImplementedException();
+            while (node != null)
+            {
+                node.N += 1;
+
+                node.Q += reward.Value; //  r(n, Player(Parent(node))) I think this is not correct
+                                        // maybe something with node.Parent.State.GetScore();
+                node = node.Parent;
+            }
         }
 
         protected MCTSNode Expand(MCTSNode parent, Action action)
         {
-            //TODO: implement
-            throw new NotImplementedException();
+            // action is an untried action from parent
+
+            // add a new child n’ to n
+            // S(n’) = Result(S(n),a)
+            var child = parent.State.GenerateChildWorldModel();
+            action.ApplyActionEffects(child);
+
+            var node = new MCTSNode(child);
+            node.Parent = parent;
+            node.Action = action;
+            parent.ChildNodes.Add(node);
+
+            return node;
         }
 
         //gets the best child of a node, using the UCT formula
         protected virtual MCTSNode BestUCTChild(MCTSNode node)
         {
-            //TODO: implement
-            throw new NotImplementedException();
+            double bestChildUct = 0;
+            MCTSNode bestChild = null;
+            for (int i = 0; i < node.ChildNodes.Count; i++)
+            {
+                float u = node.ChildNodes[i].Q / node.ChildNodes[i].N;
+
+                int parentN = node.N;
+                var uctResult = u + C/*Math.sqrt(2)*/ * Math.Sqrt(Math.Log(parentN / node.ChildNodes[i].N));
+                if (uctResult > bestChildUct)
+                {
+                    bestChildUct = uctResult;
+                    bestChild = node.ChildNodes[i];
+                }
+            }
+
+            return bestChild;
         }
 
         //this method is very similar to the bestUCTChild, but it is used to return the final action of the MCTS search, and so we do not care about
         //the exploration factor
         protected MCTSNode BestChild(MCTSNode node)
         {
-            //TODO: implement
-            throw new NotImplementedException();
+            double bestChildUct = 0;
+            MCTSNode bestChild = null;
+            for (int i = 0; i < node.ChildNodes.Count; i++)
+            {
+                float u = node.ChildNodes[i].Q / node.ChildNodes[i].N;
+
+                int parentN = node.N;
+                var uctResult = u + Math.Sqrt(Math.Log(parentN / node.ChildNodes[i].N));
+                if (uctResult > bestChildUct)
+                {
+                    bestChildUct = uctResult;
+                    bestChild = node.ChildNodes[i];
+                }
+            }
+
+            return bestChild;
         }
 
 
@@ -130,12 +214,12 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
             this.BestActionSequence.Add(bestChild.Action);
             node = bestChild;
 
-            while(!node.State.IsTerminal())
+            while (!node.State.IsTerminal())
             {
                 bestChild = this.BestChild(node);
                 if (bestChild == null) break;
                 this.BestActionSequence.Add(bestChild.Action);
-                node = bestChild;    
+                node = bestChild;
             }
 
             return this.BestFirstChild.Action;
