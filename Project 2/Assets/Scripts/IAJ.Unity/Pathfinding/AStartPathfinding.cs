@@ -163,6 +163,7 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
             return false;
         }
 
+
         protected NavigationGraphNode Quantize(Vector3 position)
         {
             return this.NavMeshGraph.QuantizeToNode(position, 1.0f);

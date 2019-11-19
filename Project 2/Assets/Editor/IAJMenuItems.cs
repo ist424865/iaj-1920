@@ -97,7 +97,13 @@ public class IAJMenuItems  {
 
                 // initialize pathfinding algorithm and start the search
                 pathfindingAlgorithm.InitializePathfindingSearch(startGate.Localize(), endGate.Localize());
-                bool finished = pathfindingAlgorithm.Search(out solution);
+                
+                bool finished = false;
+
+                while (!finished)
+                {
+                    finished = pathfindingAlgorithm.Search(out solution);
+                }
 
                 if (finished && solution != null)
                 {
