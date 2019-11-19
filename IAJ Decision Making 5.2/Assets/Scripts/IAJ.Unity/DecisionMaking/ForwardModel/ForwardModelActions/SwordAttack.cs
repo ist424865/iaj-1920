@@ -12,6 +12,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
         private float expectedXPChange;
         private int xpChange;
         private int enemyAC;
+        private int enemySimpleDamage;
         //how do you like lambda's in c#?
         private Func<int> dmgRoll;
 
@@ -20,6 +21,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
             if (target.tag.Equals("Skeleton"))
             {
                 this.dmgRoll = () => RandomHelper.RollD6();
+                this.enemySimpleDamage = 3;
                 this.expectedHPChange = 3.5f;
                 this.xpChange = 3;
                 this.expectedXPChange = 2.7f;
@@ -27,16 +29,18 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
             }
             else if (target.tag.Equals("Orc"))
             {
-                this.dmgRoll = () => RandomHelper.RollD10() + RandomHelper.RollD10();
-                this.expectedHPChange = 11.0f;
+                this.dmgRoll = () => RandomHelper.RollD10() + 2;
+                this.enemySimpleDamage = 8;
+                this.expectedHPChange = 7.5f;
                 this.xpChange = 10;
                 this.expectedXPChange = 7.0f;
                 this.enemyAC = 14;
             }
             else if (target.tag.Equals("Dragon"))
             {
-                this.dmgRoll = () => RandomHelper.RollD12() + RandomHelper.RollD12() + RandomHelper.RollD12();
-                this.expectedHPChange = 19.5f;
+                this.dmgRoll = () => RandomHelper.RollD12() + RandomHelper.RollD12();
+                this.enemySimpleDamage = 15;
+                this.expectedHPChange = 13.0f;
                 this.xpChange = 20;
                 this.expectedXPChange = 10.0f;
                 this.enemyAC = 18;
@@ -72,9 +76,17 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
             int hp = (int)worldModel.GetProperty(Properties.HP);
             int shieldHp = (int)worldModel.GetProperty(Properties.ShieldHP);
             int xp = (int)worldModel.GetProperty(Properties.XP);
-            //execute the lambda function to calculate received damage based on the creature type
-            int damage = this.dmgRoll.Invoke();
 
+            int damage = 0;
+            if (this.Character.GameManager.StochasticWorld)
+            {
+                //execute the lambda function to calculate received damage based on the creature type
+                damage = this.dmgRoll.Invoke();
+            }
+            else
+            {
+                damage = this.enemySimpleDamage;
+            }
             //calculate player's damage
             int remainingDamage = damage - shieldHp;
             int remainingShield = Mathf.Max(0, shieldHp - damage);
@@ -82,7 +94,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
 
             if(remainingDamage > 0)
             {
-                remainingHP = hp - remainingDamage;
+                remainingHP = (hp - remainingDamage);
                 worldModel.SetProperty(Properties.HP, remainingHP);
             }
 
@@ -95,15 +107,12 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
             //attack roll = D20 + attack modifier. Using 7 as attack modifier (+4 str modifier, +3 proficiency bonus)
             int attackRoll = RandomHelper.RollD20() + 7;
 
-            if (attackRoll >= enemyAC)
+            if (attackRoll >= enemyAC || !this.Character.GameManager.StochasticWorld)
             {
                 //there was an hit, enemy is destroyed, gain xp
                 //disables the target object so that it can't be reused again
                 worldModel.SetProperty(this.Target.name, false);
-
                 worldModel.SetProperty(Properties.XP, xp + this.xpChange);
-                var xpValue = worldModel.GetGoalValue(AutonomousCharacter.GAIN_LEVEL_GOAL);
-                worldModel.SetGoalValue(AutonomousCharacter.GAIN_LEVEL_GOAL, xpValue - this.xpChange);
             }
         }
 

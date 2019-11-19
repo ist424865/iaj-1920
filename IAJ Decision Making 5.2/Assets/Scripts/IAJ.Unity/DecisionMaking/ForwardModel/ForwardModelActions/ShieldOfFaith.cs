@@ -36,7 +36,6 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
             var mana = worldModel.GetProperty(Properties.MANA);
             worldModel.SetProperty(Properties.MANA, Convert.ToInt32(mana) - this.manaCost);
 
-            // Do we need to make any change to HP (increase it) or is this enough ????
         }
 
         public override bool CanExecute()

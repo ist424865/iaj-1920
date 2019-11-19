@@ -109,7 +109,8 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
         {
             NodeRecord currentNode = null;
 
-            while (!returnPartialSolution)
+            // iterate NodesPerFrame times
+            for (int count = 0; count <= this.NodesPerSearch; count++)
             {
                 // cannot reach solution node
                 if (this.Open.CountOpen() == 0)
@@ -146,15 +147,17 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
                 {
                     this.ProcessChildNode(currentNode, currentNode.node.EdgeOut(i), i);
                 }
+
             }
 
-            // calculate partial solution
-            if (currentNode == null)
+            // calculate partial solution if asked
+            if (returnPartialSolution)
             {
-                currentNode = this.Open.PeekBest();
+                solution = this.CalculateSolution(currentNode, true);
+                this.TotalProcessingTime = Time.time - this.StartTime;
             }
-            solution = this.CalculateSolution(currentNode, true);
-            this.TotalProcessingTime = Time.time - this.StartTime;
+            else
+                solution = null;
 
             // search did not finished yet
             return false;

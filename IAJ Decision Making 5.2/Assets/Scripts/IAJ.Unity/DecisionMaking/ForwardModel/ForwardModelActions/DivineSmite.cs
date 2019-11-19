@@ -23,11 +23,6 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
         {
             var change = base.GetGoalChange(goal);
 
-            //if (goal.Name == AutonomousCharacter.SURVIVE_GOAL)
-            //{
-            //    change += this.xpChange;
-            //}
-
             if (goal.Name == AutonomousCharacter.GAIN_LEVEL_GOAL)
             {
                 change -= this.xpChange;
@@ -44,11 +39,6 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
 
         public override void ApplyActionEffects(WorldModel worldModel)
         {
-            // Should we change the SURVIVE_GOAL ?
-            // If yes, what should be the remainingDamage?
-            // var surviveValue = worldModel.GetGoalValue(AutonomousCharacter.SURVIVE_GOAL);
-            // worldModel.SetGoalValue(AutonomousCharacter.SURVIVE_GOAL, surviveValue + remainingDamage);
-
             var xpValue = worldModel.GetGoalValue(AutonomousCharacter.GAIN_LEVEL_GOAL);
             worldModel.SetGoalValue(AutonomousCharacter.GAIN_LEVEL_GOAL, xpValue - this.xpChange);
 

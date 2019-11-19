@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
 namespace Assets.Scripts.IAJ.Unity.Utils
 {
@@ -38,5 +39,34 @@ namespace Assets.Scripts.IAJ.Unity.Utils
         {
             return Random.Range(1, 7);
         }
+
+        private static Random rng = new Random();
+
+        public static void Shuffle<T>(this T[] list)
+        {
+            int n = list.Length;
+            while (n > 1)
+            {
+                n--;
+                int k = Random.Range(1, n + 1);
+                T value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }
+        }
+
+        public static void Shuffle<T>(this IList<T> list)
+        {
+            int n = list.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = Random.Range(1, n + 1);
+                T value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }
+        }
     }
-}
+
+  }

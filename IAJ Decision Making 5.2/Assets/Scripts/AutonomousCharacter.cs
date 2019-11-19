@@ -23,6 +23,10 @@ namespace Assets.Scripts
         public const string GAIN_LEVEL_GOAL = "GainXP";
         public const string BE_QUICK_GOAL = "BeQuick";
         public const string GET_RICH_GOAL = "GetRich";
+        public const float RESTING_INTERVAL = 5.0f;
+        public const int REST_HP_RECOVERY = 2;
+        public bool Resting = false;
+        public float StopRestTime;
 
         public const float DECISION_MAKING_INTERVAL = 10.0f;
         //public fields to be set in Unity Editor
@@ -277,7 +281,7 @@ namespace Assets.Scripts
 
             this.TotalProcessingTimeText.text = "Process. Time: " + this.MCTSDecisionMaking.TotalProcessingTime.ToString("F");
 
-            if (this.MCTSDecisionMaking.BestFirstChild.Action != null)
+            if (this.MCTSDecisionMaking.BestFirstChild !=null)
             {
                 if (newDecision)
                 {

@@ -79,10 +79,9 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
                 this.CurrentIterationsInFrame++;
                 this.CurrentIterations++;
             }
-
             this.TotalProcessingTime += Time.realtimeSinceStartup - startTime;
-
-            return BestFinalAction(InitialNode);
+            this.InProgress = false;
+            return BestFinalAction(this.InitialNode);
         }
 
         protected MCTSNode Selection(MCTSNode initialNode)
@@ -197,7 +196,6 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
                     bestChild = node.ChildNodes[i];
                 }
             }
-
             return bestChild;
         }
 

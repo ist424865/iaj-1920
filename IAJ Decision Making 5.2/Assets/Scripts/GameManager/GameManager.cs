@@ -1,5 +1,8 @@
-﻿using Assets.Scripts.IAJ.Unity.Movement.DynamicMovement;
+﻿// Code by Joao Dias 2015-2019 and Pedro A Santos (2019)
+
+using Assets.Scripts.IAJ.Unity.Movement.DynamicMovement;
 using Assets.Scripts.IAJ.Unity.Utils;
+//using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -9,7 +12,8 @@ namespace Assets.Scripts.GameManager
 {
     public class GameManager : MonoBehaviour
     {
-        private const float UPDATE_INTERVAL = 2.0f;
+        private const float UPDATE_INTERVAL = 1.0f;
+        public const int TIME_LIMIT = 150;
         //public fields, seen by Unity in Editor
         public GameObject character;
         public AutonomousCharacter autonomousCharacter;
@@ -40,7 +44,9 @@ namespace Assets.Scripts.GameManager
         private GameObject currentEnemy;
  
         private float nextUpdateTime = 0.0f;
+        private float enemyAttackCooldown = 0.0f;
         private Vector3 previousPosition;
+        public Vector3 initialPosition;
         public bool gameEnded = false;
 
         public void Start()
@@ -48,6 +54,7 @@ namespace Assets.Scripts.GameManager
             this.WorldChanged = false;
             this.characterData = new CharacterData(this.character);
             this.previousPosition = this.character.transform.position;
+            this.initialPosition = this.character.transform.position;
 
             this.enemies = new List<GameObject>();
             this.disposableObjects = new Dictionary<string, GameObject>();
@@ -81,6 +88,9 @@ namespace Assets.Scripts.GameManager
                 this.disposableObjects.Add(potion.name, potion);
             }
 
+            this.nextUpdateTime = 0;
+            this.enemyAttackCooldown = 0.0f;
+
         }
 
         public void Update()
@@ -90,15 +100,25 @@ namespace Assets.Scripts.GameManager
             {
                 this.nextUpdateTime = Time.time + UPDATE_INTERVAL;
                 this.characterData.Time += UPDATE_INTERVAL;
+
+                
             }
 
             if (!this.SleepingNPCs)
             {
                 if (enemyCharacter != null && currentEnemy != null && currentEnemy.activeSelf)
                 {
-                    this.enemyCharacter.Movement.Target.position = this.character.transform.position;
-                    this.enemyCharacter.Update();
-                    this.SwordAttack(currentEnemy);
+                    if ((currentEnemy.transform.position - this.character.transform.position).sqrMagnitude > 2500)
+                    {
+                        enemyCharacter.Movement = null;
+                        currentEnemy = null;
+                    }
+                    else
+                    {
+                        this.enemyCharacter.Movement.Target.position = this.character.transform.position;
+                        this.enemyCharacter.Update();
+                        this.EnemyAttack(currentEnemy);
+                    }
                 }
                 else
                 {
@@ -114,7 +134,7 @@ namespace Assets.Scripts.GameManager
                             enemyCharacter.Movement = new DynamicSeek()
                             {
                                 Character = enemyCharacter.KinematicData,
-                                MaxAcceleration = 10,
+                                MaxAcceleration = 50,
                                 Target = new IAJ.Unity.Movement.KinematicData()
                             };
 
@@ -132,7 +152,7 @@ namespace Assets.Scripts.GameManager
             this.ManaText.text = "Mana: " + this.characterData.Mana;
             this.MoneyText.text = "Money: " + this.characterData.Money;
 
-            if(this.characterData.HP <= 0 || this.characterData.Time >= 200)
+            if(this.characterData.HP <= 0 || this.characterData.Time >= TIME_LIMIT)
             {
                 this.GameEnd.SetActive(true);
                 this.gameEnded = true;
@@ -189,9 +209,66 @@ namespace Assets.Scripts.GameManager
                 if (remainingDamage > 0)
                 {
                     this.characterData.HP -= remainingDamage;
+                    this.autonomousCharacter.DiaryText.text += Time.time + " I was wounded with " + remainingDamage + " damage\n";
                 }
 
                 this.WorldChanged = true;
+            }
+        }
+
+        public void EnemyAttack(GameObject enemy)
+        {
+            if(Time.time > this.enemyAttackCooldown)
+            {
+                
+                int damage = 0;
+
+                NPC enemyData = enemy.GetComponent<NPC>();
+
+                if (enemy != null && enemy.activeSelf && InMeleeRange(enemy))
+                {
+                    
+                    this.autonomousCharacter.DiaryText.text += Time.time + " I was Attacked by " + enemy.name + "\n";
+                    this.enemyAttackCooldown = Time.time + UPDATE_INTERVAL;
+
+                    if (this.StochasticWorld)
+                    {
+                        damage = enemyData.dmgRoll.Invoke();
+
+                        //attack roll = D20 + attack modifier. Using 7 as attack modifier (+4 str modifier, +3 proficiency bonus)
+                        int attackRoll = RandomHelper.RollD20() + 7;
+
+                        if (attackRoll >= enemyData.AC)
+                        {
+                            //there was an hit, enemy is destroyed, gain xp
+                            this.enemies.Remove(enemy);
+                            this.disposableObjects.Remove(enemy.name);
+                            enemy.SetActive(false);
+                            Object.Destroy(enemy);
+                        }
+                    }
+                    else
+                    {
+                        damage = enemyData.simpleDamage;
+                        this.enemies.Remove(enemy);
+                        this.disposableObjects.Remove(enemy.name);
+                        enemy.SetActive(false);
+                        Object.Destroy(enemy);
+                    }
+
+                    this.characterData.XP += enemyData.XPvalue;
+
+                    int remainingDamage = damage - this.characterData.ShieldHP;
+                    this.characterData.ShieldHP = Mathf.Max(0, this.characterData.ShieldHP - damage);
+
+                    if (remainingDamage > 0)
+                    {
+                        this.characterData.HP -= remainingDamage;
+                        this.autonomousCharacter.DiaryText.text += Time.time + " I was wounded with " + remainingDamage + " damage\n";
+                    }
+
+                    this.WorldChanged = true;
+                }
             }
         }
 
@@ -225,6 +302,36 @@ namespace Assets.Scripts.GameManager
             }
         }
 
+        public void LayOnHands()
+        {
+            if (this.characterData.Level >= 2 && this.characterData.Mana >= 7)
+            {
+                this.autonomousCharacter.DiaryText.text += Time.time + " With my Mana I Lay Hands and recovered all my health.\n";
+                this.characterData.HP = this.characterData.MaxHP;
+                this.characterData.Mana -= 7;
+                this.WorldChanged = true;
+            }
+        }
+
+        public void DivineWrath()
+        {
+            if(this.characterData.Level >= 3 && this.characterData.Mana >= 10)
+            {
+                //kill all enemies in the map
+                foreach (var enemy in this.enemies)
+                {
+                    this.characterData.XP += enemy.GetComponent<NPC>().XPvalue;
+                    this.autonomousCharacter.DiaryText.text += Time.time + " I used the Divine Wrath and all monsters were killed! \nSo ends a day's work...";
+                    enemy.SetActive(false);
+                    this.disposableObjects.Remove(enemy.name);
+                    Object.Destroy(enemy);
+                }
+
+                enemies.Clear();
+                this.WorldChanged = true;
+            }
+        }
+
         public void PickUpChest(GameObject chest)
         {
             if (chest != null && chest.activeSelf && InChestRange(chest))
@@ -238,6 +345,19 @@ namespace Assets.Scripts.GameManager
             }
         }
 
+        public void LevelUp()
+        {
+            if (this.characterData.Level >= 4) return;
+
+            if(this.characterData.XP >= this.characterData.Level*10)
+            {
+                this.characterData.Level++;
+                this.characterData.MaxHP += 10;
+                this.characterData.XP = 0;
+                this.WorldChanged = true;
+                this.autonomousCharacter.DiaryText.text += Time.time + " I leveled up to level " + this.characterData.Level + "\n";
+            }
+        }
 
         public void GetManaPotion(GameObject manaPotion)
         {
@@ -263,6 +383,37 @@ namespace Assets.Scripts.GameManager
             }
         }
 
+        public void Rest()
+        {
+            if (!this.autonomousCharacter.Resting)
+            {
+                this.autonomousCharacter.DiaryText.text += Time.time + " I am resting\n";
+                this.autonomousCharacter.Resting = true;
+                this.autonomousCharacter.StopRestTime = Time.time + AutonomousCharacter.RESTING_INTERVAL;
+            }
+            else if (this.autonomousCharacter.StopRestTime < Time.time)
+            {
+                this.characterData.HP += AutonomousCharacter.REST_HP_RECOVERY;
+                this.characterData.HP = Mathf.Min(this.characterData.HP, this.characterData.MaxHP);
+                this.autonomousCharacter.Resting = false;
+                this.WorldChanged = true;
+            }
+        }
+
+        public void Teleport()
+        {
+            if (this.characterData.Level >= 2 && this.characterData.Mana >= 5)
+            {
+                this.autonomousCharacter.DiaryText.text += Time.time + " With my Mana I teleported away from danger.\n";
+                this.autonomousCharacter.Character.KinematicData.position  = this.initialPosition;
+                this.autonomousCharacter.Character.Movement = null;
+                this.characterData.Mana -= 5;
+                this.WorldChanged = true;
+            }
+
+        }
+
+
 
         private bool CheckRange(GameObject obj, float maximumSqrDistance)
         {
@@ -282,12 +433,12 @@ namespace Assets.Scripts.GameManager
 
         public bool InChestRange(GameObject chest)
         {
-            return this.CheckRange(chest, 9.0f);
+            return this.CheckRange(chest, 16.0f);
         }
 
         public bool InPotionRange(GameObject potion)
         {
-            return this.CheckRange(potion, 9.0f);
+            return this.CheckRange(potion, 16.0f);
         }
     }
 }

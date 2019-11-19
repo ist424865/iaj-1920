@@ -54,7 +54,8 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.GOB
 
             var startTime = Time.realtimeSinceStartup;
 
-            while (this.CurrentDepth >= 0)
+            // TODO: Is this correct ?
+            while (this.CurrentDepth >= 0 && this.TotalActionCombinationsProcessed < this.ActionCombinationsProcessedPerFrame)
             {
                 if (this.CurrentDepth >= MAX_DEPTH)
                 {
@@ -79,7 +80,6 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.GOB
                     Models[CurrentDepth + 1] = Models[CurrentDepth].GenerateChildWorldModel();
                     nextAction.ApplyActionEffects(Models[CurrentDepth + 1]);
                     ActionPerLevel[CurrentDepth] = nextAction;
-                    BestActionSequence[CurrentDepth] = nextAction;
                     this.CurrentDepth++;
                     processedActions++;
                 }
