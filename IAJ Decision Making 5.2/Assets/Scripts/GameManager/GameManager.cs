@@ -293,7 +293,7 @@ namespace Assets.Scripts.GameManager
 
         public void ShieldOfFaith()
         {
-            if (this.characterData.Mana >= 5)
+            if (this.characterData.Mana >= 5 && this.characterData.ShieldHP < 5)
             {
                 this.characterData.ShieldHP = 5;
                 this.characterData.Mana -= 5;

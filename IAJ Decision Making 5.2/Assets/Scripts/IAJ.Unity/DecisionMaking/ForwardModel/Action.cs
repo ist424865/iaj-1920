@@ -42,7 +42,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel
             return this.Duration;
         }
 
-        public virtual bool CanExecute(WorldModel woldModel)
+        public virtual bool CanExecute(WorldModel worldModel)
         {
             return true;
         }

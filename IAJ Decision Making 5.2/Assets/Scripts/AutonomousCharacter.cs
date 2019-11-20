@@ -103,13 +103,17 @@ namespace Assets.Scripts
                 ChangeRate = 0.1f
             };
 
-            this.GetRichGoal = new Goal(GET_RICH_GOAL, 1.0f)
+            this.GetRichGoal = new Goal(GET_RICH_GOAL, 1.25f)
             {
                 InsistenceValue = 5.0f,
-                ChangeRate = 0.2f
+                ChangeRate = 0.5f
             };
 
-            this.BeQuickGoal = new Goal(BE_QUICK_GOAL, 1.0f)
+            // The duration influences a lot the be quick goal (and discontentment).
+            // So if the target has to get a mana potion and then a shield,
+            // the duration would be larger than a picking up chest, so the chest would be chosen.
+            // However the best goal there is to survive, and pick a shield.
+            this.BeQuickGoal = new Goal(BE_QUICK_GOAL, 0.25f)
             {
                 ChangeRate = 0.1f
             };
@@ -159,8 +163,8 @@ namespace Assets.Scripts
             }
 
             var worldModel = new CurrentStateWorldModel(this.GameManager, this.Actions, this.Goals);
-            //this.GOAPDecisionMaking = new DepthLimitedGOAPDecisionMaking(worldModel, this.Actions, this.Goals);
-            this.MCTSDecisionMaking = new MCTS(worldModel);
+            this.GOAPDecisionMaking = new DepthLimitedGOAPDecisionMaking(worldModel, this.Actions, this.Goals);
+            //this.MCTSDecisionMaking = new MCTS(worldModel);
 
             this.DiaryText.text = "My Diary \n I awoke. What a wonderful day to kill Monsters!\n";
         }
@@ -171,21 +175,25 @@ namespace Assets.Scripts
 
             if (Time.time > this.nextUpdateTime || this.GameManager.WorldChanged)
             {
+                // Update next time to update
                 this.GameManager.WorldChanged = false;
                 this.nextUpdateTime = Time.time + DECISION_MAKING_INTERVAL;
 
-                //first step, perceptions
-                //update the agent's goals based on the state of the world
+                // First step, perceptions
+                // Update the agent's goals based on the state of the world
 
+                // Survival goal: maxHP - characterHP && maxShieldHP - shieldHP
+                this.SurviveGoal.InsistenceValue = this.GameManager.characterData.MaxHP - this.GameManager.characterData.HP
+                                                 + 5 - this.GameManager.characterData.ShieldHP; // TODO: is this correct?
 
-                this.SurviveGoal.InsistenceValue = this.GameManager.characterData.MaxHP - this.GameManager.characterData.HP;
-
+                // Be Quick goal (max 10)
                 this.BeQuickGoal.InsistenceValue += DECISION_MAKING_INTERVAL * this.BeQuickGoal.ChangeRate;
                 if (this.BeQuickGoal.InsistenceValue > 10.0f)
                 {
                     this.BeQuickGoal.InsistenceValue = 10.0f;
                 }
 
+                // Gain Level goal: characterLevel - previousLevel
                 this.GainLevelGoal.InsistenceValue += this.GainLevelGoal.ChangeRate; //increase in goal over time
                 if (this.GameManager.characterData.Level > this.previousLevel)
                 {
@@ -193,37 +201,43 @@ namespace Assets.Scripts
                     this.previousLevel = this.GameManager.characterData.Level;
                 }
 
+                // Get Rich goal: characterMoney - previousMoney (max 10)
                 this.GetRichGoal.InsistenceValue += this.GetRichGoal.ChangeRate; //increase in goal over time
                 if (this.GetRichGoal.InsistenceValue > 10)
                 {
                     this.GetRichGoal.InsistenceValue = 10.0f;
                 }
-
                 if (this.GameManager.characterData.Money > this.previousGold)
                 {
                     this.GetRichGoal.InsistenceValue -= this.GameManager.characterData.Money - this.previousGold;
                     this.previousGold = this.GameManager.characterData.Money;
                 }
 
+                // TODO: is this correct?
+                // Do not allow goal values under 0
+                foreach (Goal goal in this.Goals)
+                {
+                    goal.InsistenceValue = Mathf.Max(0, goal.InsistenceValue);
+                }
 
-
+                // Status display text
                 this.SurviveGoalText.text = "Survive: " + this.SurviveGoal.InsistenceValue;
                 this.GainXPGoalText.text = "Gain Level: " + this.GainLevelGoal.InsistenceValue.ToString("F1");
                 this.BeQuickGoalText.text = "Be Quick: " + this.BeQuickGoal.InsistenceValue.ToString("F1");
                 this.GetRichGoalText.text = "GetRich: " + this.GetRichGoal.InsistenceValue.ToString("F1");
                 this.DiscontentmentText.text = "Discontentment: " + this.CalculateDiscontentment().ToString("F1");
 
-                //initialize Decision Making Proccess
+                // Initialize Decision Making Proccess
                 this.CurrentAction = null;
-
-                //this.GOAPDecisionMaking.InitializeDecisionMakingProcess();
-                this.MCTSDecisionMaking.InitializeMCTSearch();
-
+                this.GOAPDecisionMaking.InitializeDecisionMakingProcess();
+                //this.MCTSDecisionMaking.InitializeMCTSearch();
             }
 
-            //this.UpdateDLGOAP();
-            this.UpdateMCTS();
+            // Update Decision Making Proccess
+            this.UpdateDLGOAP();
+            //this.UpdateMCTS();
 
+            // If current action is null, algorithm has not finished
             if (this.CurrentAction != null)
             {
                 if (this.CurrentAction.CanExecute())
@@ -232,13 +246,13 @@ namespace Assets.Scripts
                 }
             }
 
-            //call the pathfinding method if the user specified a new goal
+            // Call the pathfinding method if the user specified a new goal
             if (this.AStarPathFinding.InProgress)
             {
                 var finished = this.AStarPathFinding.Search(out this.currentSolution);
                 if (finished && this.currentSolution != null)
                 {
-                    //lets smooth out the Path
+                    // Lets smooth out the Path
                     this.startPosition = this.Character.KinematicData.position;
                     //this.currentSolution.P
                     this.currentSmoothedSolution = this.smoothPath(this.Character.KinematicData.position, this.currentSolution);
@@ -251,9 +265,8 @@ namespace Assets.Scripts
                 }
             }
 
-
             this.Character.Update();
-            //manage the character's animation
+            // Manage the character's animation
             if (this.Character.KinematicData.velocity.sqrMagnitude > 0.1)
             {
                 this.characterAnimator.SetBool("Walking", true);
@@ -300,12 +313,14 @@ namespace Assets.Scripts
             }
         }
 
+        // Update GOAP
         private void UpdateDLGOAP()
         {
             bool newDecision = false;
+            // If GOAP hasn't finished yet
             if (this.GOAPDecisionMaking.InProgress)
             {
-                //choose an action using the GOB Decision Making process
+                // Choose an action using the GOB Decision Making process
                 var action = this.GOAPDecisionMaking.ChooseAction();
                 if (action != null)
                 {
@@ -314,10 +329,12 @@ namespace Assets.Scripts
                 }
             }
 
+            // Update GOAP display text
             this.TotalProcessingTimeText.text = "Process. Time: " + this.GOAPDecisionMaking.TotalProcessingTime.ToString("F");
             this.BestDiscontentmentText.text = "Best Discontentment: " + this.GOAPDecisionMaking.BestDiscontentmentValue.ToString("F");
             this.ProcessedActionsText.text = "Act. comb. processed: " + this.GOAPDecisionMaking.TotalActionCombinationsProcessed;
 
+            // Displays best action sequence so far
             if (this.GOAPDecisionMaking.BestAction != null)
             {
                 if (newDecision)
@@ -339,8 +356,8 @@ namespace Assets.Scripts
 
         public void StartPathfinding(Vector3 targetPosition)
         {
-            //if the targetPosition received is the same as a previous target, then this a request for the same target
-            //no need to redo the pathfinding search
+            // If the targetPosition received is the same as a previous target, then this a request for the same target
+            // No need to redo the pathfinding search
             if (!this.previousTarget.Equals(targetPosition))
             {
                 this.AStarPathFinding.InitializePathfindingSearch(this.Character.KinematicData.position, targetPosition);
@@ -348,11 +365,12 @@ namespace Assets.Scripts
             }
         }
 
+        // For debug purposes
         public void OnDrawGizmos()
         {
             if (this.draw)
             {
-                //draw the current Solution Path if any (for debug purposes)
+                // Draw the current Solution Path if any (for debug purposes)
                 if (this.currentSolution != null)
                 {
                     var previousPosition = this.startPosition;

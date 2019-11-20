@@ -70,15 +70,21 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
 
             this.CurrentIterationsInFrame = 0;
 
-            while (this.CurrentIterationsInFrame < this.MaxIterationsProcessedPerFrame && this.CurrentIterations < this.MaxIterations)
+            while (this.CurrentIterations < this.MaxIterations && this.CurrentIterationsInFrame < this.MaxIterationsProcessedPerFrame)
             {
-
                 selectedNode = Selection(this.InitialNode);
                 reward = Playout(selectedNode.State);
                 Backpropagate(selectedNode, reward);
                 this.CurrentIterationsInFrame++;
                 this.CurrentIterations++;
             }
+
+            // did not finish processing all possible computational budget
+            if (this.CurrentIterations < this.MaxIterations)
+            {
+                return null;
+            }
+
             this.TotalProcessingTime += Time.realtimeSinceStartup - startTime;
             this.InProgress = false;
             return BestFinalAction(this.InitialNode);

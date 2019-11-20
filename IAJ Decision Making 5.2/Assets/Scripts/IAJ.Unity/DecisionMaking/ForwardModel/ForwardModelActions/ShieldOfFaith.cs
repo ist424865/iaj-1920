@@ -12,37 +12,37 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
     {
         protected AutonomousCharacter Character { get; set; }
 
-        private int hpShield;
+        private int maxShieldHP;
+        private int changeShieldHP;
         private int manaCost;
+        
         public ShieldOfFaith(AutonomousCharacter character) : base("ShieldOfFaith")
         {
             this.Character = character;
-            this.hpShield = 5;
+            this.maxShieldHP = 5;
             this.manaCost = 5;
-
-            // Maybe we need to take in account the character HP and check if it is already full.
+            this.changeShieldHP = this.maxShieldHP - this.Character.GameManager.characterData.ShieldHP;
         }
 
-        public override void ApplyActionEffects(WorldModel worldModel)
+        public override float GetGoalChange(Goal goal)
         {
-            base.ApplyActionEffects(worldModel);
+            var change = base.GetGoalChange(goal);
 
-            var goalValue = worldModel.GetGoalValue(AutonomousCharacter.SURVIVE_GOAL);
+            if (goal.Name == AutonomousCharacter.SURVIVE_GOAL)
+            {
+                change -= this.changeShieldHP;
+            }
 
-            worldModel.SetGoalValue(AutonomousCharacter.SURVIVE_GOAL, goalValue - this.hpShield);
-
-            worldModel.SetProperty(Properties.ShieldHP, this.hpShield);
-
-            var mana = worldModel.GetProperty(Properties.MANA);
-            worldModel.SetProperty(Properties.MANA, Convert.ToInt32(mana) - this.manaCost);
-
+            return change;
         }
 
         public override bool CanExecute()
         {
             // the new shield will replace the old one but we need to double check the mana cost
+            // only execute if shield hp is lower than its maximum
             if (!base.CanExecute()) return false;
-            else if (this.Character.GameManager.characterData.Mana >= this.manaCost)
+            else if (this.Character.GameManager.characterData.Mana >= this.manaCost
+                  && this.Character.GameManager.characterData.ShieldHP < this.maxShieldHP)
             {
                 return true;
             }
@@ -55,10 +55,11 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
         public override bool CanExecute(WorldModel worldModel)
         {
             // the new shield will replace the old one but we need to double check the mana cost
-            var mana = worldModel.GetProperty(Properties.MANA);
+            int mana = (int)worldModel.GetProperty(Properties.MANA);
+            int shieldhp = (int)worldModel.GetProperty(Properties.ShieldHP);
 
             if (!base.CanExecute(worldModel)) return false;
-            else if (Convert.ToInt32(mana) >= this.manaCost)
+            else if (mana >= this.manaCost && shieldhp < this.maxShieldHP)
             {
                 return true;
             }
@@ -74,11 +75,18 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
             this.Character.GameManager.ShieldOfFaith();
         }
 
-        public override float GetGoalChange(Goal goal)
+        public override void ApplyActionEffects(WorldModel worldModel)
         {
-            var change = base.GetGoalChange(goal);
-            if (goal.Name == AutonomousCharacter.SURVIVE_GOAL) change -= hpShield;
-            return change;
+            base.ApplyActionEffects(worldModel);
+
+            float goalValue = worldModel.GetGoalValue(AutonomousCharacter.SURVIVE_GOAL);
+
+            worldModel.SetGoalValue(AutonomousCharacter.SURVIVE_GOAL, goalValue - this.changeShieldHP);
+
+            worldModel.SetProperty(Properties.ShieldHP, this.maxShieldHP);
+
+            int mana = (int)worldModel.GetProperty(Properties.MANA);
+            worldModel.SetProperty(Properties.MANA, mana - this.manaCost);
         }
 
         public override float GetHValue(WorldModel worldModel)

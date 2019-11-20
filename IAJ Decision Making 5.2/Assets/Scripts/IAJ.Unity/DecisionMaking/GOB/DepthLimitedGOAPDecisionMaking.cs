@@ -8,7 +8,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.GOB
 {
     public class DepthLimitedGOAPDecisionMaking
     {
-        public const int MAX_DEPTH = 3;
+        public int MAX_DEPTH = 3;
         public int ActionCombinationsProcessedPerFrame { get; set; }
         public float TotalProcessingTime { get; set; }
         public int TotalActionCombinationsProcessed { get; set; }
@@ -48,14 +48,13 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.GOB
 
         public Action ChooseAction()
         {
-            var processedActions = 0;
+            int actionCombinationsProcessed = 0;
 
-            float currentValue = 0;
+            float currentValue;
 
             var startTime = Time.realtimeSinceStartup;
 
-            // TODO: Is this correct ?
-            while (this.CurrentDepth >= 0 && this.TotalActionCombinationsProcessed < this.ActionCombinationsProcessedPerFrame)
+            while (this.CurrentDepth >= 0 && actionCombinationsProcessed <= this.ActionCombinationsProcessedPerFrame)
             {
                 if (this.CurrentDepth >= MAX_DEPTH)
                 {
@@ -69,6 +68,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.GOB
                         this.BestActionSequence = this.ActionPerLevel.Clone() as Action[];
                     }
                     this.CurrentDepth -= 1;
+                    actionCombinationsProcessed++;
                     this.TotalActionCombinationsProcessed++;
                     continue;
                 }
@@ -81,13 +81,25 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.GOB
                     nextAction.ApplyActionEffects(Models[CurrentDepth + 1]);
                     ActionPerLevel[CurrentDepth] = nextAction;
                     this.CurrentDepth++;
-                    processedActions++;
                 }
                 else
                 {
                     this.CurrentDepth--;
                 }
 
+            }
+
+            if (this.CurrentDepth >= 0)
+            {
+                // Did not finish processing all possible combinations
+                return null;
+            }
+
+            if (this.CurrentDepth < 0 && this.BestAction == null)
+            {
+                // Could not find a sequence with MaxDepth length.
+                // We have to decrease MaxDepth
+                MAX_DEPTH--;
             }
 
             this.TotalProcessingTime += Time.realtimeSinceStartup - startTime;

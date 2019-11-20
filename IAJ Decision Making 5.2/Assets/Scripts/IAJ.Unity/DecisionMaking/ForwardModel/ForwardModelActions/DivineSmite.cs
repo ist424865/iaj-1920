@@ -31,28 +31,6 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
             return change;
         }
 
-        public override void Execute()
-        {
-            base.Execute();
-            this.Character.GameManager.DivineSmite(this.Target);
-        }
-
-        public override void ApplyActionEffects(WorldModel worldModel)
-        {
-            var xpValue = worldModel.GetGoalValue(AutonomousCharacter.GAIN_LEVEL_GOAL);
-            worldModel.SetGoalValue(AutonomousCharacter.GAIN_LEVEL_GOAL, xpValue - this.xpChange);
-
-            var xp = worldModel.GetProperty(Properties.XP);
-            worldModel.SetProperty(Properties.XP, Convert.ToInt32(xp) + this.xpChange);
-
-            var mana = worldModel.GetProperty(Properties.MANA);
-            worldModel.SetProperty(Properties.MANA, Convert.ToInt32(mana) - this.manaCost);
-
-            //disables the target object so that it can't be reused again
-            //skeleton enemy disappears!
-            worldModel.SetProperty(this.Target.name, false);
-        }
-
         public override bool CanExecute()
         {
             if (!base.CanExecute()) return false;
@@ -68,10 +46,10 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
 
         public override bool CanExecute(WorldModel worldModel)
         {
-            var mana = worldModel.GetProperty(Properties.MANA);
+            int mana = (int)worldModel.GetProperty(Properties.MANA);
 
             if (!base.CanExecute(worldModel)) return false;
-            else if (Convert.ToInt32(mana) >= this.manaCost)
+            else if (mana >= this.manaCost)
             {
                 return true;
             }
@@ -79,6 +57,31 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
             {
                 return false;
             }
+        }
+
+        public override void Execute()
+        {
+            base.Execute();
+            this.Character.GameManager.DivineSmite(this.Target);
+        }
+
+        public override void ApplyActionEffects(WorldModel worldModel)
+        {
+            base.ApplyActionEffects(worldModel);
+
+            // TODO: this in sword attack is not updated
+            var xpValue = worldModel.GetGoalValue(AutonomousCharacter.GAIN_LEVEL_GOAL);
+            worldModel.SetGoalValue(AutonomousCharacter.GAIN_LEVEL_GOAL, xpValue - this.xpChange);
+
+            // Update mana with cost of divine smite (2)
+            int mana = (int)worldModel.GetProperty(Properties.MANA);
+            worldModel.SetProperty(Properties.MANA, mana - this.manaCost);
+
+            // There was an hit, enemy is destroyed, gain xp (3)
+            // Disables the target object so that it can't be reused again
+            int xp = (int)worldModel.GetProperty(Properties.XP);
+            worldModel.SetProperty(this.Target.name, false);
+            worldModel.SetProperty(Properties.XP, xp + this.xpChange);
         }
 
         public override float GetHValue(WorldModel worldModel)
