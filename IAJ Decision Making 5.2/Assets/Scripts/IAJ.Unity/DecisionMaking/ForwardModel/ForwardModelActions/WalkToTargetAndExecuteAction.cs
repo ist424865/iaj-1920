@@ -66,7 +66,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
             var duration = this.GetDuration(worldModel);
 
             var quicknessValue = worldModel.GetGoalValue(AutonomousCharacter.BE_QUICK_GOAL);
-            worldModel.SetGoalValue(AutonomousCharacter.BE_QUICK_GOAL, quicknessValue + duration * 0.1f);
+            worldModel.SetGoalValue(AutonomousCharacter.BE_QUICK_GOAL, quicknessValue + duration * 0.10f);
 
             var time = (float)worldModel.GetProperty(Properties.TIME);
             worldModel.SetProperty(Properties.TIME, time + duration);

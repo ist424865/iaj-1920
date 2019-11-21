@@ -36,7 +36,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
         {
             this.InProgress = false;
             this.CurrentStateWorldModel = currentStateWorldModel;
-            this.MaxIterations = 100;
+            this.MaxIterations = 150; //100
             this.MaxIterationsProcessedPerFrame = 10;
             this.RandomGenerator = new System.Random();
         }
@@ -79,7 +79,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
                 this.CurrentIterations++;
             }
 
-            // did not finish processing all possible computational budget
+            // Did not finish processing all possible computational budget
             if (this.CurrentIterations < this.MaxIterations)
             {
                 return null;
@@ -105,7 +105,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
                 }
                 else
                 {
-                    currentNode = BestChild(currentNode);
+                    currentNode = BestUCTChild(currentNode);
                 }
             }
 
@@ -131,6 +131,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
             // return reward for state s
             var reward = new Reward();
             reward.Value = currentState.GetScore();
+            //reward.PlayerID = 0;
             return reward;
         }
 
@@ -163,7 +164,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
             return node;
         }
 
-        //gets the best child of a node, using the UCT formula
+        // Gets the best child of a node, using the UCT formula
         protected virtual MCTSNode BestUCTChild(MCTSNode node)
         {
             double bestChildUct = 0;
@@ -173,7 +174,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
                 float u = node.ChildNodes[i].Q / node.ChildNodes[i].N;
 
                 int parentN = node.N;
-                var uctResult = u + C/*Math.sqrt(2)*/ * Math.Sqrt(Math.Log(parentN / node.ChildNodes[i].N));
+                var uctResult = u + C/*Math.sqrt(2)*/ * Math.Sqrt(Math.Log(parentN)/ node.ChildNodes[i].N);
                 if (uctResult > bestChildUct)
                 {
                     bestChildUct = uctResult;
@@ -184,8 +185,9 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
             return bestChild;
         }
 
-        //this method is very similar to the bestUCTChild, but it is used to return the final action of the MCTS search, and so we do not care about
-        //the exploration factor
+        // Secure Child
+        // This method is very similar to the bestUCTChild, but it is used to return the final action of the MCTS search, and so we do not care about
+        // The exploration factor
         protected MCTSNode BestChild(MCTSNode node)
         {
             double bestChildUct = 0;
@@ -195,7 +197,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
                 float u = node.ChildNodes[i].Q / node.ChildNodes[i].N;
 
                 int parentN = node.N;
-                var uctResult = u + Math.Sqrt(Math.Log(parentN / node.ChildNodes[i].N));
+                var uctResult = u + Math.Sqrt(Math.Log(parentN) / node.ChildNodes[i].N);
                 if (uctResult > bestChildUct)
                 {
                     bestChildUct = uctResult;

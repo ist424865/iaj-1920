@@ -113,7 +113,7 @@ namespace Assets.Scripts
             // So if the target has to get a mana potion and then a shield,
             // the duration would be larger than a picking up chest, so the chest would be chosen.
             // However the best goal there is to survive, and pick a shield.
-            this.BeQuickGoal = new Goal(BE_QUICK_GOAL, 0.25f)
+            this.BeQuickGoal = new Goal(BE_QUICK_GOAL, 0.5f)
             {
                 ChangeRate = 0.1f
             };

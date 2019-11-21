@@ -13,7 +13,7 @@ namespace Assets.Scripts.GameManager
     public class GameManager : MonoBehaviour
     {
         private const float UPDATE_INTERVAL = 1.0f;
-        public const int TIME_LIMIT = 150;
+        public const int TIME_LIMIT = 200;
         //public fields, seen by Unity in Editor
         public GameObject character;
         public AutonomousCharacter autonomousCharacter;
