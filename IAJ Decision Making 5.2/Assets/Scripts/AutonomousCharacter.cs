@@ -127,9 +127,13 @@ namespace Assets.Scripts
             //initialize the available actions
             //Uncomment commented actions after you implement them
 
-            this.Actions = new List<Action>();
-
-            this.Actions.Add(new ShieldOfFaith(this));
+            this.Actions = new List<Action>
+            {
+                new ShieldOfFaith(this),
+                new Rest(this),
+                new Teleport(this),
+                new LevelUp(this),
+            };
 
             foreach (var chest in GameObject.FindGameObjectsWithTag("Chest"))
             {

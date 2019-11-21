@@ -8,20 +8,17 @@ using UnityEngine;
 
 namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActions
 {
-    class ShieldOfFaith : Action
+    class Teleport : Action
     {
         protected AutonomousCharacter Character { get; set; }
 
-        private int maxShieldHP;
-        private int changeShieldHP;
+        private const int UPDATE_SURVIVAL = 2;
         private int manaCost;
-        
-        public ShieldOfFaith(AutonomousCharacter character) : base("ShieldOfFaith")
+
+        public Teleport(AutonomousCharacter character) : base("ShieldOfFaith")
         {
             this.Character = character;
-            this.maxShieldHP = 5;
             this.manaCost = 5;
-            this.changeShieldHP = this.maxShieldHP - this.Character.GameManager.characterData.ShieldHP;
         }
 
         public override float GetGoalChange(Goal goal)
@@ -30,7 +27,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
 
             if (goal.Name == AutonomousCharacter.SURVIVE_GOAL)
             {
-                change -= this.changeShieldHP;
+                change -= UPDATE_SURVIVAL;
             }
 
             return change;
@@ -42,7 +39,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
             // only execute if shield hp is lower than its maximum
             if (!base.CanExecute()) return false;
             else if (this.Character.GameManager.characterData.Mana >= this.manaCost
-                  && this.Character.GameManager.characterData.ShieldHP < this.maxShieldHP)
+                  && this.Character.GameManager.characterData.Level >= 2)
             {
                 return true;
             }
@@ -56,10 +53,10 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
         {
             // the new shield will replace the old one but we need to double check the mana cost
             int mana = (int)worldModel.GetProperty(Properties.MANA);
-            int shieldhp = (int)worldModel.GetProperty(Properties.ShieldHP);
+            int level = (int)worldModel.GetProperty(Properties.LEVEL);
 
             if (!base.CanExecute(worldModel)) return false;
-            else if (mana >= this.manaCost && shieldhp < this.maxShieldHP)
+            else if (mana >= this.manaCost && level >= 2)
             {
                 return true;
             }
@@ -72,7 +69,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
         public override void Execute()
         {
             base.Execute();
-            this.Character.GameManager.ShieldOfFaith();
+            this.Character.GameManager.Teleport();
         }
 
         public override void ApplyActionEffects(WorldModel worldModel)
@@ -80,12 +77,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
             base.ApplyActionEffects(worldModel);
 
             float goalValue = worldModel.GetGoalValue(AutonomousCharacter.SURVIVE_GOAL);
-
-            int shieldhp = (int)worldModel.GetProperty(Properties.ShieldHP);
-            int shieldhpchange = this.maxShieldHP - shieldhp;
-            worldModel.SetGoalValue(AutonomousCharacter.SURVIVE_GOAL, goalValue - shieldhpchange);
-
-            worldModel.SetProperty(Properties.ShieldHP, this.maxShieldHP);
+            worldModel.SetGoalValue(AutonomousCharacter.SURVIVE_GOAL, goalValue - UPDATE_SURVIVAL);
 
             int mana = (int)worldModel.GetProperty(Properties.MANA);
             worldModel.SetProperty(Properties.MANA, mana - this.manaCost);

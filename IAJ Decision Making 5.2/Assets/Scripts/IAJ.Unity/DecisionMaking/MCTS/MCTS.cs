@@ -120,12 +120,14 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
             // while s is nonterminal do
             while (!currentState.IsTerminal())
             {
-                // chose a from Actions(s) uniformly at random
+                // chose a from Actions(s) uniformly at random                
                 var totalActions = currentState.GetExecutableActions();
                 var randomAction = totalActions[RandomGenerator.Next(totalActions.Length)];
 
                 // s <- Result(s,a)
                 randomAction.ApplyActionEffects(currentState);
+                // TODO: is this needed?
+                currentState.CalculateNextPlayer();
             }
 
             // return reward for state s
@@ -153,12 +155,15 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
 
             // add a new child n’ to n
             // S(n’) = Result(S(n),a)
-            var child = parent.State.GenerateChildWorldModel();
-            action.ApplyActionEffects(child);
+            var newstate = parent.State.GenerateChildWorldModel();
+            action.ApplyActionEffects(newstate);
+            newstate.CalculateNextPlayer();
 
-            var node = new MCTSNode(child);
-            node.Parent = parent;
-            node.Action = action;
+            var node = new MCTSNode(newstate)
+            {
+                Parent = parent,
+                Action = action
+            };
             parent.ChildNodes.Add(node);
 
             return node;

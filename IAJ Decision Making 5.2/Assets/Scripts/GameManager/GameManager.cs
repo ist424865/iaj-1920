@@ -13,7 +13,7 @@ namespace Assets.Scripts.GameManager
     public class GameManager : MonoBehaviour
     {
         private const float UPDATE_INTERVAL = 1.0f;
-        public const int TIME_LIMIT = 200;
+        public const int TIME_LIMIT = 150;
         //public fields, seen by Unity in Editor
         public GameObject character;
         public AutonomousCharacter autonomousCharacter;
@@ -405,7 +405,7 @@ namespace Assets.Scripts.GameManager
             if (this.characterData.Level >= 2 && this.characterData.Mana >= 5)
             {
                 this.autonomousCharacter.DiaryText.text += Time.time + " With my Mana I teleported away from danger.\n";
-                this.autonomousCharacter.Character.KinematicData.position  = this.initialPosition;
+                this.autonomousCharacter.Character.KinematicData.position = this.initialPosition;
                 this.autonomousCharacter.Character.Movement = null;
                 this.characterData.Mana -= 5;
                 this.WorldChanged = true;
