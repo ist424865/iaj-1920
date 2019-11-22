@@ -53,7 +53,6 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding
             // if child node is in open with higher F-value
             else if (childNodeRecord.status == NodeStatus.Open && childNodeRecord.fValue > f) // solve ties by ranking better new nodes
             {
-                // TODO: replace in Open is needed? Is this correct?
                 // replace here is replacing the values as the node reference is the same
                 this.UpdateNodeRecord(childNodeRecord, bestNode, g, h, f);
                 this.Open.Replace(childNodeRecord, childNodeRecord);

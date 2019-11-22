@@ -7,22 +7,19 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
 {
     public class Rest : Action
     {
-        private int maxHP;
-        private int hpChange;
-
         public AutonomousCharacter Character { get; private set; }
 
         public Rest(AutonomousCharacter character) : base("Rest")
         {
             this.Character = character;
-            this.maxHP = this.Character.GameManager.characterData.MaxHP;
-            this.hpChange = Mathf.Min(this.Character.GameManager.characterData.HP + AutonomousCharacter.REST_HP_RECOVERY, maxHP);
         }
 
         public override bool CanExecute()
         {
+            int maxHP = this.Character.GameManager.characterData.MaxHP;
+
             if (!base.CanExecute()) return false;
-            else if (this.Character.GameManager.characterData.HP < this.maxHP)
+            else if (this.Character.GameManager.characterData.HP < maxHP)
             {
                 return true;
             }
@@ -69,16 +66,23 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
 
             // Update BE QUICK goal with resting time
             var quicknessValue = worldModel.GetGoalValue(AutonomousCharacter.BE_QUICK_GOAL);
-            worldModel.SetGoalValue(AutonomousCharacter.BE_QUICK_GOAL, quicknessValue + AutonomousCharacter.RESTING_INTERVAL);
+            worldModel.SetGoalValue(AutonomousCharacter.BE_QUICK_GOAL, quicknessValue + 1.5f);
+
+            // Update world time
+            var time = (float)worldModel.GetProperty(Properties.TIME);
+            worldModel.SetProperty(Properties.TIME, time + AutonomousCharacter.RESTING_INTERVAL);
         }
 
         public override float GetGoalChange(Goal goal)
         {
+            int maxHP = this.Character.GameManager.characterData.MaxHP;
+            int hpChange = Mathf.Min(this.Character.GameManager.characterData.HP + AutonomousCharacter.REST_HP_RECOVERY, maxHP);
+
             var change = base.GetGoalChange(goal);
 
             if (goal.Name == AutonomousCharacter.SURVIVE_GOAL)
             {
-                change -= this.hpChange;
+                change -= hpChange;
             }
             else if (goal.Name == AutonomousCharacter.BE_QUICK_GOAL)
             {

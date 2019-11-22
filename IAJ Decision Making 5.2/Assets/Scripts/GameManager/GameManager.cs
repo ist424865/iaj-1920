@@ -385,11 +385,12 @@ namespace Assets.Scripts.GameManager
 
         public void Rest()
         {
-            if (!this.autonomousCharacter.Resting)
+            if (!this.autonomousCharacter.Resting && this.characterData.HP < this.characterData.MaxHP)
             {
                 this.autonomousCharacter.DiaryText.text += Time.time + " I am resting\n";
                 this.autonomousCharacter.Resting = true;
                 this.autonomousCharacter.StopRestTime = Time.time + AutonomousCharacter.RESTING_INTERVAL;
+                this.autonomousCharacter.Character.Movement = null;
             }
             else if (this.autonomousCharacter.StopRestTime < Time.time)
             {

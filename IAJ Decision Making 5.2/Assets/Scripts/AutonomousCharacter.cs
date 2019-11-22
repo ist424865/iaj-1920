@@ -103,7 +103,7 @@ namespace Assets.Scripts
                 ChangeRate = 0.1f
             };
 
-            this.GetRichGoal = new Goal(GET_RICH_GOAL, 1.25f)
+            this.GetRichGoal = new Goal(GET_RICH_GOAL, 1.0f)
             {
                 InsistenceValue = 5.0f,
                 ChangeRate = 0.5f
@@ -113,7 +113,7 @@ namespace Assets.Scripts
             // So if the target has to get a mana potion and then a shield,
             // the duration would be larger than a picking up chest, so the chest would be chosen.
             // However the best goal there is to survive, and pick a shield.
-            this.BeQuickGoal = new Goal(BE_QUICK_GOAL, 0.5f)
+            this.BeQuickGoal = new Goal(BE_QUICK_GOAL, 1.0f)
             {
                 ChangeRate = 0.1f
             };
@@ -167,8 +167,8 @@ namespace Assets.Scripts
             }
 
             var worldModel = new CurrentStateWorldModel(this.GameManager, this.Actions, this.Goals);
-            this.GOAPDecisionMaking = new DepthLimitedGOAPDecisionMaking(worldModel, this.Actions, this.Goals);
-            //this.MCTSDecisionMaking = new MCTS(worldModel);
+            //this.GOAPDecisionMaking = new DepthLimitedGOAPDecisionMaking(worldModel, this.Actions, this.Goals);
+            this.MCTSDecisionMaking = new MCTS(worldModel);
 
             this.DiaryText.text = "My Diary \n I awoke. What a wonderful day to kill Monsters!\n";
         }
@@ -188,13 +188,13 @@ namespace Assets.Scripts
 
                 // Survival goal: maxHP - characterHP && maxShieldHP - shieldHP
                 this.SurviveGoal.InsistenceValue = this.GameManager.characterData.MaxHP - this.GameManager.characterData.HP
-                                                 + 5 - this.GameManager.characterData.ShieldHP; // TODO: is this correct?
+                                                 + 5 - this.GameManager.characterData.ShieldHP;
 
-                // Be Quick goal (max 10)
+                // Be Quick goal
                 this.BeQuickGoal.InsistenceValue += DECISION_MAKING_INTERVAL * this.BeQuickGoal.ChangeRate;
-                if (this.BeQuickGoal.InsistenceValue > 10.0f)
+                if (this.BeQuickGoal.InsistenceValue > 20)
                 {
-                    this.BeQuickGoal.InsistenceValue = 10.0f;
+                    this.BeQuickGoal.InsistenceValue = 20.0f;
                 }
 
                 // Gain Level goal: characterLevel - previousLevel
@@ -207,21 +207,14 @@ namespace Assets.Scripts
 
                 // Get Rich goal: characterMoney - previousMoney (max 10)
                 this.GetRichGoal.InsistenceValue += this.GetRichGoal.ChangeRate; //increase in goal over time
-                if (this.GetRichGoal.InsistenceValue > 10)
+                if (this.GetRichGoal.InsistenceValue > 15)
                 {
-                    this.GetRichGoal.InsistenceValue = 10.0f;
+                    this.GetRichGoal.InsistenceValue = 15.0f;
                 }
                 if (this.GameManager.characterData.Money > this.previousGold)
                 {
                     this.GetRichGoal.InsistenceValue -= this.GameManager.characterData.Money - this.previousGold;
                     this.previousGold = this.GameManager.characterData.Money;
-                }
-
-                // TODO: is this correct?
-                // Do not allow goal values under 0
-                foreach (Goal goal in this.Goals)
-                {
-                    goal.InsistenceValue = Mathf.Max(0, goal.InsistenceValue);
                 }
 
                 // Status display text
@@ -233,13 +226,13 @@ namespace Assets.Scripts
 
                 // Initialize Decision Making Proccess
                 this.CurrentAction = null;
-                this.GOAPDecisionMaking.InitializeDecisionMakingProcess();
-                //this.MCTSDecisionMaking.InitializeMCTSearch();
+                //this.GOAPDecisionMaking.InitializeDecisionMakingProcess();
+                this.MCTSDecisionMaking.InitializeMCTSearch();
             }
 
             // Update Decision Making Proccess
-            this.UpdateDLGOAP();
-            //this.UpdateMCTS();
+            //this.UpdateDLGOAP();
+            this.UpdateMCTS();
 
             // If current action is null, algorithm has not finished
             if (this.CurrentAction != null)

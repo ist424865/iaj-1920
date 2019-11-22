@@ -47,7 +47,6 @@ namespace Assets.Scripts.IAJ.Unity.Pathfinding.GoalBounding
             this.Open.AddToOpen(startNodeRecord);
             this.Closed.Initialize();
 
-            // TODO: is this needed?
             // initialize start node out connection for all edges
             var edgeOutConnections = startNode.OutEdgeCount;
             for (int i = 0; i < edgeOutConnections; i++)

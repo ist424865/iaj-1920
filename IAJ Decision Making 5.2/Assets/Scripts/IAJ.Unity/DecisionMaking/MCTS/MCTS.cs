@@ -20,6 +20,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
         public float TotalProcessingTime { get; private set; }
         public MCTSNode BestFirstChild { get; set; }
         public List<Action> BestActionSequence { get; private set; }
+        public int NumberOfMultiplePlayouts { get; set; }
 
 
         protected int CurrentIterations { get; set; }
@@ -39,13 +40,15 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
             this.MaxIterations = 150; //100
             this.MaxIterationsProcessedPerFrame = 10;
             this.RandomGenerator = new System.Random();
+            // Improve these values to get best results
+            this.NumberOfMultiplePlayouts = 10;
+            this.MaxPlayoutDepthReached = 10;
+            this.MaxSelectionDepthReached = 10;
         }
 
 
         public void InitializeMCTSearch()
         {
-            this.MaxPlayoutDepthReached = 0;
-            this.MaxSelectionDepthReached = 0;
             this.CurrentIterations = 0;
             this.CurrentIterationsInFrame = 0;
             this.TotalProcessingTime = 0.0f;
@@ -64,7 +67,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
         public Action Run()
         {
             MCTSNode selectedNode;
-            Reward reward;
+            Reward reward = new Reward();
 
             var startTime = Time.realtimeSinceStartup;
 
@@ -73,7 +76,11 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
             while (this.CurrentIterations < this.MaxIterations && this.CurrentIterationsInFrame < this.MaxIterationsProcessedPerFrame)
             {
                 selectedNode = Selection(this.InitialNode);
-                reward = Playout(selectedNode.State);
+                reward.Value = 0;
+                for (int i = 0; i < this.NumberOfMultiplePlayouts; i++) {
+                    reward.Value = Playout(selectedNode.State).Value;
+                }
+                reward.Value /= this.NumberOfMultiplePlayouts;
                 Backpropagate(selectedNode, reward);
                 this.CurrentIterationsInFrame++;
                 this.CurrentIterations++;
@@ -95,8 +102,10 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
             Action nextAction;
             MCTSNode currentNode = initialNode;
             MCTSNode bestChild;
+            this.CurrentDepth = 0;
 
-            while (!currentNode.State.IsTerminal())
+            // while s is nonterminal or reached Max Selection Depth do
+            while (!currentNode.State.IsTerminal() && this.CurrentDepth < this.MaxSelectionDepthReached)
             {
                 nextAction = currentNode.State.GetNextAction();
                 if (nextAction != null)
@@ -106,6 +115,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
                 else
                 {
                     currentNode = BestUCTChild(currentNode);
+                    this.CurrentDepth++;
                 }
             }
 
@@ -116,9 +126,10 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
         protected virtual Reward Playout(WorldModel initialPlayoutState)
         {
             var currentState = initialPlayoutState.GenerateChildWorldModel();
+            this.CurrentDepth = 0;
 
-            // while s is nonterminal do
-            while (!currentState.IsTerminal())
+            // while s is nonterminal or reached Max Playout Depth do
+            while (!currentState.IsTerminal() && this.CurrentDepth < this.MaxPlayoutDepthReached)
             {
                 // chose a from Actions(s) uniformly at random                
                 var totalActions = currentState.GetExecutableActions();
@@ -126,8 +137,8 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
 
                 // s <- Result(s,a)
                 randomAction.ApplyActionEffects(currentState);
-                // TODO: is this needed?
                 currentState.CalculateNextPlayer();
+                this.CurrentDepth++;
             }
 
             // return reward for state s
@@ -201,8 +212,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
             {
                 float u = node.ChildNodes[i].Q / node.ChildNodes[i].N;
 
-                int parentN = node.N;
-                var uctResult = u + Math.Sqrt(Math.Log(parentN) / node.ChildNodes[i].N);
+                var uctResult = u;
                 if (uctResult > bestChildUct)
                 {
                     bestChildUct = uctResult;
