@@ -21,10 +21,10 @@ MonoBehaviour:
     y: 30
     width: 1440
     height: 726
-  m_MinSize: {x: 681, y: 322}
-  m_MaxSize: {x: 12006, y: 8022}
+  m_MinSize: {x: 679, y: 344}
+  m_MaxSize: {x: 12004, y: 8044}
   vertical: 0
-  controlID: 2604
+  controlID: 3734
 --- !u!114 &2
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -127,10 +127,10 @@ MonoBehaviour:
     y: 0
     width: 1026
     height: 726
-  m_MinSize: {x: 406, y: 322}
-  m_MaxSize: {x: 8006, y: 8022}
+  m_MinSize: {x: 404, y: 344}
+  m_MaxSize: {x: 8004, y: 8044}
   vertical: 1
-  controlID: 2605
+  controlID: 3735
 --- !u!114 &4
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -152,10 +152,10 @@ MonoBehaviour:
     y: 0
     width: 1026
     height: 448
-  m_MinSize: {x: 406, y: 222}
-  m_MaxSize: {x: 8006, y: 4022}
+  m_MinSize: {x: 404, y: 222}
+  m_MaxSize: {x: 8004, y: 4022}
   vertical: 0
-  controlID: 2570
+  controlID: 3713
 --- !u!114 &5
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -210,10 +210,10 @@ MonoBehaviour:
   m_ViewDataDictionary: {fileID: 0}
   m_SceneHierarchy:
     m_TreeViewState:
-      scrollPos: {x: 0, y: 0}
+      scrollPos: {x: 0, y: 4}
       m_SelectedIDs: 
       m_LastClickedID: 0
-      m_ExpandedIDs: 6afbffff
+      m_ExpandedIDs: 6afbffff54440000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -409,8 +409,8 @@ MonoBehaviour:
     y: 448
     width: 1026
     height: 278
-  m_MinSize: {x: 100, y: 100}
-  m_MaxSize: {x: 4000, y: 4000}
+  m_MinSize: {x: 102, y: 122}
+  m_MaxSize: {x: 4002, y: 4022}
   m_ActualView: {fileID: 12}
   m_Panes:
   - {fileID: 11}
@@ -456,21 +456,21 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Scenes
+    - Assets/Scripts/IAJ.Unity/Pathfinding/DataStructures/GoalBounding
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets/Scenes
+  - Assets/Scripts/IAJ.Unity/Pathfinding/DataStructures/GoalBounding
   m_LastFoldersGridSize: -1
   m_LastProjectPath: /Users/ruinunca/CodeMonkey/ist/meic/iaj/projects/IAJ Decision
     Making 5.2
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 42.000122}
-    m_SelectedIDs: d4440000
-    m_LastClickedID: 17620
-    m_ExpandedIDs: 00000000604200004e4300006a43000052440000a644000094450000d445000042460000ec4600004850000094510000
+    scrollPos: {x: 0, y: 369}
+    m_SelectedIDs: 1e350000
+    m_LastClickedID: 13598
+    m_ExpandedIDs: 0000000040310000403200005e32000050330000aa33000068340000ac340000ec3400005e3500000c360000743f0000d240000000ca9a3b
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -498,7 +498,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 00000000604200004e4300006a43000052440000a644000094450000d445000042460000ec4600004850000094510000
+    m_ExpandedIDs: 0000000040310000403200005e32000050330000aa33000068340000ac340000ec3400005e3500000c360000743f0000d240000000ca9a3b
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -642,5 +642,5 @@ MonoBehaviour:
     m_ControlHash: -371814159
     m_PrefName: Preview_InspectorPreview
   m_PreviewWindow: {fileID: 0}
-  m_LastInspectedObjectInstanceID: 22102
+  m_LastInspectedObjectInstanceID: -1
   m_LastVerticalScrollValue: 0
