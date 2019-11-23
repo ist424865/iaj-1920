@@ -11,5 +11,6 @@
         public const string MONEY = "Money";
         public const string LEVEL = "Level";
         public const string POSITION = "Position";
+        public const string ENEMIES = "Enemies";
     }
 }

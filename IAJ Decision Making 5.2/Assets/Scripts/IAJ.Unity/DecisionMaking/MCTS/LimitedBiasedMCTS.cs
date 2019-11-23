@@ -13,7 +13,8 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
 
         public LimitedBiasedMCTS(CurrentStateWorldModel currentStateWorldModel) : base(currentStateWorldModel)
         {
-            this.MaxPlayoutIterations = 5;
+            this.MaxIterations = 300;
+            this.MaxPlayoutIterations = 20;
         }
 
         protected override Reward Playout(WorldModel initialPlayoutState)

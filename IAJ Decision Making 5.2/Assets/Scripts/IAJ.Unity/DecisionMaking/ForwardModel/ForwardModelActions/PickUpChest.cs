@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.GameManager;
+﻿using System.Collections.Generic;
+using Assets.Scripts.GameManager;
 using Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel;
 using UnityEngine;
 
@@ -6,6 +7,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
 {
     public class PickUpChest : WalkToTargetAndExecuteAction
     {
+        public const int MAX_SQR_DISTANCE = 400;
 
         public PickUpChest(AutonomousCharacter character, GameObject target) : base("PickUpChest",character,target)
         {
@@ -52,7 +54,24 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
 
         public override float GetHValue(WorldModel worldModel)
         {
-            return base.GetHValue(worldModel);
+            // Chests without enemy are the best option
+            var chest = this.Target;
+            List<GameObject> enemies = worldModel.GetProperty(Properties.ENEMIES) as List<GameObject>;
+
+            foreach (var enemy in enemies)
+            {
+                // If chest has enemy near it
+                if (CheckObjectsRange(chest, enemy, MAX_SQR_DISTANCE))
+                {
+                    return base.GetHValue(worldModel)/7.5f;
+                }
+            }
+            return -50.0f + base.GetHValue(worldModel)/7.5f;
+        }
+        
+        public static bool CheckObjectsRange(GameObject obj1, GameObject obj2, float maximumSqrDistance)
+        {
+            return (obj1.transform.position - obj2.transform.position).sqrMagnitude <= maximumSqrDistance;
         }
     }
 }

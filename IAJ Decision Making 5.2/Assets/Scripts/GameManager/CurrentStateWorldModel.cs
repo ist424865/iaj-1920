@@ -29,7 +29,9 @@ namespace Assets.Scripts.GameManager
         public override object GetProperty(string propertyName)
         {
 
-            //TIP: this code can be optimized by using a dictionary with lambda functions instead of if's  
+            //TIP: this code can be optimized by using a dictionary with lambda functions instead of if's
+            if (propertyName.Equals(Properties.ENEMIES)) return this.GameManager.enemies;
+
             if (propertyName.Equals(Properties.MANA)) return this.GameManager.characterData.Mana;
 
             if (propertyName.Equals(Properties.XP)) return this.GameManager.characterData.XP;

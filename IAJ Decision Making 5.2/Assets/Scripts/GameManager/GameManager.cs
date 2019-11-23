@@ -421,7 +421,6 @@ namespace Assets.Scripts.GameManager
             return (obj.transform.position - this.characterData.CharacterGameObject.transform.position).sqrMagnitude <= maximumSqrDistance;
         }
 
-
         public bool InMeleeRange(GameObject enemy)
         {
             return this.CheckRange(enemy, 16.0f);

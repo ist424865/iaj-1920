@@ -66,7 +66,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
 
             // (1) Normalize heuristics
             // (2) Calculate cumulative probability
-            // (3) Return biased random action
+            // (3) Return GIBBS biased random action
             float randomValue = (float)RandomGenerator.NextDouble();
             heuristics[0] /= sumExp;
 
@@ -81,7 +81,8 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
                 if (randomValue < heuristics[i])
                     return actions[i];
             }
-
+            // If something wrong happened
+            //return actions[0];
             return null;
         }
     }

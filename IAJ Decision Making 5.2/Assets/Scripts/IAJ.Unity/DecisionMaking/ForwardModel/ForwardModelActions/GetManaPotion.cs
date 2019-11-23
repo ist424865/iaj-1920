@@ -68,7 +68,10 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
 
         public override float GetHValue(WorldModel worldModel)
         {
-            return base.GetHValue(worldModel);
+            int mana = (int)worldModel.GetProperty(Properties.MANA);
+            if (mana <= 1.0f) return 10.0f;
+            else if (mana <= 5.0f) return 5.0f + base.GetHValue(worldModel);
+            else return 100.0f;
         }
     }
 }

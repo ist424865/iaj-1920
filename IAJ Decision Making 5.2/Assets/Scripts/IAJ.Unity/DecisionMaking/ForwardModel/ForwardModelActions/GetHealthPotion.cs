@@ -86,7 +86,17 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
 
         public override float GetHValue(WorldModel worldModel)
         {
-            return base.GetHValue(worldModel);
+            int maxhp = (int)worldModel.GetProperty(Properties.MAXHP);
+            int currenthp = (int)worldModel.GetProperty(Properties.HP);
+            int shieldhp = (int)worldModel.GetProperty(Properties.ShieldHP);
+
+            // When character has more than 80% MaxHP this is not a good option
+            if (currenthp >= 0.8f * maxhp) return 100.0f;
+            // When character has less than 20% MaxHP this is the best option
+            else if (currenthp <= 0.2f * maxhp) return 1.0f;
+            // When character has less HP + ShieldHP than 50% MaxHP this is the best option
+            else if (currenthp + shieldhp < 0.5f * maxhp) return 5.0f + base.GetHValue(worldModel);
+            else return 5.0f + base.GetHValue(worldModel);
         }
     }
 }
