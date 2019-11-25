@@ -72,6 +72,28 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
 
             this.CurrentIterationsInFrame = 0;
 
+            // OPTIMIZATION
+            // There are some actions more important than others.
+            // Level up is an instant action
+            // Picking up a chest near the charact is always important.
+            foreach (var child in this.InitialNode.ChildNodes)
+            {
+
+                if (child.Action.Name == "LevelUp")
+                {
+                    this.BestFirstChild = child;
+                    this.InProgress = false;
+                    return this.BestFirstChild.Action;
+                }
+
+                if (child.Action.Name.Contains("PickUpChest") && child.Action.GetHValue(this.InitialNode.State) < 0.0f)
+                {
+                    this.BestFirstChild = child;
+                    this.InProgress = false;
+                    return this.BestFirstChild.Action;
+                }
+            }
+
             while (this.CurrentIterations < this.MaxIterations && this.CurrentIterationsInFrame < this.MaxIterationsProcessedPerFrame)
             {
                 selectedNode = Selection(this.InitialNode);
@@ -162,8 +184,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
             {
                 node.N += 1;
 
-                node.Q += reward.Value; //  r(n, Player(Parent(node))) I think this is not correct
-                                        // maybe something with node.Parent.State.GetScore();
+                node.Q += reward.Value; 
                 node = node.Parent;
             }
         }

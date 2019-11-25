@@ -17,6 +17,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
         {
             var change = base.GetGoalChange(goal);
             if (goal.Name == AutonomousCharacter.GET_RICH_GOAL) change -= 5.0f;
+            else if (goal.Name == AutonomousCharacter.BE_QUICK_GOAL) change -= 2.5f;
             return change;
         }
 

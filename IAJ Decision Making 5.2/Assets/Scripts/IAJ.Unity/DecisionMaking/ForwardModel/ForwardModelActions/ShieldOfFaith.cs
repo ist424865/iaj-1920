@@ -98,7 +98,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
             int shieldhp = (int)worldModel.GetProperty(Properties.ShieldHP);
             int mana = (int)worldModel.GetProperty(Properties.MANA);
 
-            if (currenthp + shieldhp <= 0.6f * maxhp && shieldhp <= 0.5f * this.maxShieldHP) return 1.0f;
+            if (currenthp + shieldhp <= 0.6f * maxhp && shieldhp <= 0.5f * this.maxShieldHP) return -1.0f;
             else if (mana > 8 && shieldhp <= 0.5f * this.maxShieldHP) return 2.0f;
             else return 20.0f;
         }

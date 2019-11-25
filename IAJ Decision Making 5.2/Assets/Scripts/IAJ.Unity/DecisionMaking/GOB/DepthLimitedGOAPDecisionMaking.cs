@@ -56,14 +56,14 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.GOB
 
             while (this.CurrentDepth >= 0 && actionCombinationsProcessed <= this.ActionCombinationsProcessedPerFrame)
             {
-                currentValue = Models[CurrentDepth].CalculateDiscontentment(this.Goals);
+                /*currentValue = Models[CurrentDepth].CalculateDiscontentment(this.Goals);
 
                 // Calculate the discontentment value for each depth: if bigger, backtrack
                 if (currentValue > this.BestDiscontentmentValue)
                 {
                     this.CurrentDepth--;
                     continue;
-                }
+                }*/
 
                 if (this.CurrentDepth >= MAX_DEPTH)
                 {

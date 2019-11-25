@@ -390,7 +390,7 @@ namespace Assets.Scripts.GameManager
                 this.autonomousCharacter.DiaryText.text += Time.time + " I am resting\n";
                 this.autonomousCharacter.Resting = true;
                 this.autonomousCharacter.StopRestTime = Time.time + AutonomousCharacter.RESTING_INTERVAL;
-                this.autonomousCharacter.Character.Movement = null;
+                this.autonomousCharacter.UpdateRestingGoal = true;
             }
             else if (this.autonomousCharacter.StopRestTime < Time.time)
             {

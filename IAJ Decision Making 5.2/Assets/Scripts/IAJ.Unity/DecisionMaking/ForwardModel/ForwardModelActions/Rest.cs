@@ -52,21 +52,15 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
 
         public override void ApplyActionEffects(WorldModel worldModel)
         {
+            int hp = (int)worldModel.GetProperty(Properties.HP);
             int maxHp = (int)worldModel.GetProperty(Properties.MAXHP);
-            int HP = (int)worldModel.GetProperty(Properties.HP);
-            int afterRestHP = HP + AutonomousCharacter.REST_HP_RECOVERY;
+            int changeHp = maxHp - hp;
 
-            // Cannot exceed maxHP
-            afterRestHP = Mathf.Min(afterRestHP, maxHp);
-            worldModel.SetProperty(Properties.HP, afterRestHP);
+            var goalValue = worldModel.GetGoalValue(AutonomousCharacter.SURVIVE_GOAL);
 
-            // Update SURVIVAL goal with HP change: afterRestHP - characterHP
-            var survivalValue = worldModel.GetGoalValue(AutonomousCharacter.SURVIVE_GOAL);
-            worldModel.SetGoalValue(AutonomousCharacter.SURVIVE_GOAL, survivalValue - (afterRestHP - HP));
+            worldModel.SetGoalValue(AutonomousCharacter.SURVIVE_GOAL, goalValue - changeHp);
 
-            // Update BE QUICK goal with resting time
-            var quicknessValue = worldModel.GetGoalValue(AutonomousCharacter.BE_QUICK_GOAL);
-            worldModel.SetGoalValue(AutonomousCharacter.BE_QUICK_GOAL, quicknessValue + 1.5f);
+            worldModel.SetProperty(Properties.HP, maxHp);
 
             // Update world time
             var time = (float)worldModel.GetProperty(Properties.TIME);
@@ -76,13 +70,13 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
         public override float GetGoalChange(Goal goal)
         {
             int maxHP = this.Character.GameManager.characterData.MaxHP;
-            int hpChange = Mathf.Min(this.Character.GameManager.characterData.HP + AutonomousCharacter.REST_HP_RECOVERY, maxHP);
+            int newHp = Mathf.Min(this.Character.GameManager.characterData.HP + AutonomousCharacter.REST_HP_RECOVERY, maxHP);
 
             var change = base.GetGoalChange(goal);
 
             if (goal.Name == AutonomousCharacter.SURVIVE_GOAL)
             {
-                change -= hpChange;
+                change -= newHp - this.Character.GameManager.characterData.HP;
             }
             else if (goal.Name == AutonomousCharacter.BE_QUICK_GOAL)
             {

@@ -27,6 +27,7 @@ namespace Assets.Scripts
         public const int REST_HP_RECOVERY = 2;
         public bool Resting = false;
         public float StopRestTime;
+        public bool UpdateRestingGoal = false;
 
         public const float DECISION_MAKING_INTERVAL = 10.0f;
         //public fields to be set in Unity Editor
@@ -106,7 +107,7 @@ namespace Assets.Scripts
             this.GetRichGoal = new Goal(GET_RICH_GOAL, 1.0f)
             {
                 InsistenceValue = 5.0f,
-                ChangeRate = 0.5f
+                ChangeRate = 1.0f
             };
 
             // The duration influences a lot the be quick goal (and discontentment).
@@ -168,7 +169,7 @@ namespace Assets.Scripts
 
             var worldModel = new CurrentStateWorldModel(this.GameManager, this.Actions, this.Goals);
             //this.GOAPDecisionMaking = new DepthLimitedGOAPDecisionMaking(worldModel, this.Actions, this.Goals);
-            this.MCTSDecisionMaking = new LimitedBiasedMCTS(worldModel);
+            this.MCTSDecisionMaking = new BiasedMCTS(worldModel);
 
             this.DiaryText.text = "My Diary \n I awoke. What a wonderful day to kill Monsters!\n";
         }
@@ -186,9 +187,19 @@ namespace Assets.Scripts
                 // First step, perceptions
                 // Update the agent's goals based on the state of the world
 
-                // Survival goal: maxHP - characterHP && maxShieldHP - shieldHP
-                this.SurviveGoal.InsistenceValue = this.GameManager.characterData.MaxHP - this.GameManager.characterData.HP
+                // Survival goal: MaxHP - characterHP && maxShieldHP - shieldHP
+                var survival = this.GameManager.characterData.MaxHP - this.GameManager.characterData.HP
                                                  + 5 - this.GameManager.characterData.ShieldHP;
+
+                if (survival > 15)
+                {
+                    survival = 15;
+                }
+                else if (survival <= 0)
+                {
+                    survival = 0;
+                }
+                this.SurviveGoal.InsistenceValue = survival;
 
                 // Be Quick goal
                 this.BeQuickGoal.InsistenceValue += DECISION_MAKING_INTERVAL * this.BeQuickGoal.ChangeRate;
@@ -262,7 +273,15 @@ namespace Assets.Scripts
                 }
             }
 
-            this.Character.Update();
+            if (this.Resting)
+            {
+                this.Character.KinematicData.velocity = Vector3.zero;
+            }
+            else
+            {
+                this.Character.Update();
+            }
+
             // Manage the character's animation
             if (this.Character.KinematicData.velocity.sqrMagnitude > 0.1)
             {

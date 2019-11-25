@@ -7,11 +7,16 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel
     {
         private Dictionary<string, object> Properties { get; set; }
         private List<Action> Actions { get; set; }
-        protected IEnumerator<Action> ActionEnumerator { get; set; } 
+        protected IEnumerator<Action> ActionEnumerator { get; set; }
 
-        private Dictionary<string, float> GoalValues { get; set; } 
+        private Dictionary<string, float> GoalValues { get; set; }
 
         protected WorldModel Parent { get; set; }
+
+        private string[] enemies = { "Skeleton1", "Skeleton2", "Orc1", "Orc2", "Dragon" };
+        private string[] listOfProperties = { "Mana", "HP", "ShieldHP", "MAXHP", "XP", "Time", "Money", "Level", "Position" };
+        private string[] resources = { "Chest1", "Chest2", "Chest3", "Chest4", "Chest5", "HealthPotion1", "HealthPotion2", "ManaPotion1", "ManaPotion2" };
+
 
         public WorldModel(List<Action> actions)
         {
@@ -28,6 +33,18 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel
             this.Actions = parent.Actions;
             this.Parent = parent;
             this.ActionEnumerator = this.Actions.GetEnumerator();
+            foreach (var name in enemies)
+            {
+                this.SetProperty(name, parent.GetProperty(name));
+            }
+            foreach (var name in listOfProperties)
+            {
+                this.SetProperty(name, parent.GetProperty(name));
+            }
+            foreach (var name in resources)
+            {
+                this.SetProperty(name, parent.GetProperty(name));
+            }
         }
 
         public virtual object GetProperty(string propertyName)
@@ -45,6 +62,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel
             {
                 return null;
             }
+            //return this.Properties[propertyName];
         }
 
         public virtual void SetProperty(string propertyName, object value)
@@ -117,7 +135,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel
             {
                 if (this.ActionEnumerator.MoveNext())
                 {
-                    action = this.ActionEnumerator.Current;    
+                    action = this.ActionEnumerator.Current;
                 }
                 else
                 {
@@ -137,7 +155,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel
         {
             return true;
         }
-        
+
 
         public virtual float GetScore()
         {
