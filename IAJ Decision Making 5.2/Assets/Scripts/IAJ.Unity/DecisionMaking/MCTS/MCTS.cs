@@ -202,7 +202,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.MCTS
             var node = new MCTSNode(newstate)
             {
                 Parent = parent,
-                Action = action
+                Action = action,
             };
             parent.ChildNodes.Add(node);
 

@@ -14,7 +14,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel
         protected WorldModel Parent { get; set; }
 
         private string[] enemies = { "Skeleton1", "Skeleton2", "Orc1", "Orc2", "Dragon" };
-        private string[] listOfProperties = { "Mana", "HP", "ShieldHP", "MAXHP", "XP", "Time", "Money", "Level", "Position" };
+        private string[] listOfProperties = { "Mana", "HP", "ShieldHP", "MAXHP", "XP", "Time", "Money", "Level", "Position", "Enemies" };
         private string[] resources = { "Chest1", "Chest2", "Chest3", "Chest4", "Chest5", "HealthPotion1", "HealthPotion2", "ManaPotion1", "ManaPotion2" };
 
 
@@ -49,20 +49,7 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel
 
         public virtual object GetProperty(string propertyName)
         {
-            //recursive implementation of WorldModel
-            if (this.Properties.ContainsKey(propertyName))
-            {
-                return this.Properties[propertyName];
-            }
-            else if (this.Parent != null)
-            {
-                return this.Parent.GetProperty(propertyName);
-            }
-            else
-            {
-                return null;
-            }
-            //return this.Properties[propertyName];
+            return this.Properties[propertyName];
         }
 
         public virtual void SetProperty(string propertyName, object value)

@@ -52,6 +52,8 @@ namespace Assets.Scripts.IAJ.Unity.DecisionMaking.ForwardModel.ForwardModelActio
 
         public override void ApplyActionEffects(WorldModel worldModel)
         {
+            base.ApplyActionEffects(worldModel);
+
             int hp = (int)worldModel.GetProperty(Properties.HP);
             int maxHp = (int)worldModel.GetProperty(Properties.MAXHP);
             int changeHp = maxHp - hp;

@@ -168,8 +168,8 @@ namespace Assets.Scripts
             }
 
             var worldModel = new CurrentStateWorldModel(this.GameManager, this.Actions, this.Goals);
-            //this.GOAPDecisionMaking = new DepthLimitedGOAPDecisionMaking(worldModel, this.Actions, this.Goals);
-            this.MCTSDecisionMaking = new BiasedMCTS(worldModel);
+            this.GOAPDecisionMaking = new DepthLimitedGOAPDecisionMaking(worldModel, this.Actions, this.Goals);
+            //this.MCTSDecisionMaking = new LimitedBiasedMCTS(worldModel);
 
             this.DiaryText.text = "My Diary \n I awoke. What a wonderful day to kill Monsters!\n";
         }
@@ -237,13 +237,13 @@ namespace Assets.Scripts
 
                 // Initialize Decision Making Proccess
                 this.CurrentAction = null;
-                //this.GOAPDecisionMaking.InitializeDecisionMakingProcess();
-                this.MCTSDecisionMaking.InitializeMCTSearch();
+                this.GOAPDecisionMaking.InitializeDecisionMakingProcess();
+                //this.MCTSDecisionMaking.InitializeMCTSearch();
             }
 
             // Update Decision Making Proccess
-            //this.UpdateDLGOAP();
-            this.UpdateMCTS();
+            this.UpdateDLGOAP();
+            //this.UpdateMCTS();
 
             // If current action is null, algorithm has not finished
             if (this.CurrentAction != null)
