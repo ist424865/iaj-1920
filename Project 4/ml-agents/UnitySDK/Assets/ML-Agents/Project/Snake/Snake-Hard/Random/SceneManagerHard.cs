@@ -8,8 +8,8 @@ public class SceneManagerHard : Academy {
 
     public GameObject defaultApple;
     public const int APPLE_NUMBER = 6;
-    public const float DERDEFAULT_HEIGHT = 0.23f;
-
+    //public const float DERDEFAULT_HEIGHT = 0.23f;
+    public const float DERDEFAULT_HEIGHT = 0.0f;
 
     // Use this for initialization
     void Start () {
