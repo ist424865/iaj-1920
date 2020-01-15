@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using MLAgents;
 
-public class SceneManager : MonoBehaviour {
+public class SceneManager : Academy {
 
     public GameObject apple;
     public const int APPLE_NUMBER = 5;
