@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class AppleDestroy : MonoBehaviour
 {
-    //public const float DERDEFAULT_HEIGHT = 0.23f;
     public const float DERDEFAULT_HEIGHT = 0.0f;
     void OnCollisionEnter(Collision collision)
     {
