@@ -4,9 +4,17 @@ using UnityEngine;
 using MLAgents;
 
 public class Snake : MonoBehaviour
-{
-    int component = 3;
-    Vector3 speed;
+{   
+    //Speed Variables
+    public int SPEED = 3;
+    private Vector3 speedVector;
+
+    //Body
+    public int MAX_BODY = 100;
+    private int bodySize = 0;
+
+    public GameObject snake_body;
+    private GameObject[] body;
 
     void OnCollisionEnter(Collision collision)
     {
@@ -16,12 +24,24 @@ public class Snake : MonoBehaviour
             Destroy(gameObject);
             Application.Quit();
         }
+
+        //Snake eats an Apple
+        if (collision.collider.tag == "goal")
+        {
+            //var newPiece = GameObject.Instantiate(snake_body);
+            //newPiece.transform.position = gameObject.transform.position;
+            //body[bodySize] = newPiece;
+            //bodySize++;
+
+
+        }
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        speed = new Vector3(0.0f, 0.0f, component);
+        body = new GameObject[MAX_BODY];
+        speedVector = new Vector3(0.0f, 0.0f, SPEED);
     }
 
     // Update is called once per frame
@@ -29,26 +49,37 @@ public class Snake : MonoBehaviour
     {
         if (Input.GetKeyDown("w"))
         {
-            speed = new Vector3(0.0f, 0.0f, component);
+            speedVector = new Vector3(0.0f, 0.0f, SPEED);
+  
         }
 
         if (Input.GetKeyDown("s"))
         {
-            speed = new Vector3(0.0f, 0.0f, -component);
+            speedVector = new Vector3(0.0f, 0.0f, -SPEED);
+
         }
 
         if (Input.GetKeyDown("a"))
         {
-            speed = new Vector3(-component, 0.0f, -0.0f);
+            speedVector = new Vector3(-SPEED, 0.0f, 0.0f);
+   
         }
 
         if (Input.GetKeyDown("d"))
         {
-            speed = new Vector3(component, 0.0f, -0.0f);
+            speedVector = new Vector3(SPEED, 0.0f, 0.0f);
+   
         }
 
         //Perform Movement
-        transform.Translate(speed * Time.deltaTime);
+       
+       
+        transform.Translate(speedVector * Time.deltaTime);
+
+
+
+
+
 
 
     }
