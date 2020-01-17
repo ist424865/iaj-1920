@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 7792154786297019929}
   m_Layer: 0
   m_Name: Snake
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -107,6 +107,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   SPEED: 3
+  MAX_BODY: 100
   snake_body: {fileID: 0}
 --- !u!54 &7792154786297019929
 Rigidbody:
