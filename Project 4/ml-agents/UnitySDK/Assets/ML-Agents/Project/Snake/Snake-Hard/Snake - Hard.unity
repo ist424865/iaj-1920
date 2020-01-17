@@ -676,6 +676,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3275a1bde471e9442b575fa27c7f9bb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  SPEED: 3
+  MAX_BODY: 100
+  snake_body: {fileID: 7792154786297019939, guid: 41ccb5b0edc2c9147a69d6904806e7ed,
+    type: 3}
 --- !u!54 &315194191
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4029,7 +4033,7 @@ GameObject:
   - component: {fileID: 1666565808}
   m_Layer: 0
   m_Name: Cube (6)
-  m_TagString: Untagged
+  m_TagString: wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5256,7 +5260,7 @@ GameObject:
   - component: {fileID: 2078597938}
   m_Layer: 0
   m_Name: Cube (8)
-  m_TagString: Untagged
+  m_TagString: wall
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
