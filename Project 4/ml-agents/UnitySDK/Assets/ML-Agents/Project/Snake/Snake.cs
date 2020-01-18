@@ -7,6 +7,7 @@ public class Snake : MonoBehaviour
 {   
     //Speed Variables
     public int SPEED = 3;
+    public GameObject pointsDisplay;
     private Vector3 speedVector;
 
     //Body
@@ -60,6 +61,8 @@ public class Snake : MonoBehaviour
     void Update()
     {
         frames++;
+        pointsDisplay.GetComponent<UnityEngine.UI.Text>().text = "Score : " + bodySize;
+
         if (Input.GetKeyDown("w"))
         {
             speedVector = new Vector3(0.0f, 0.0f, SPEED);
@@ -109,7 +112,7 @@ public class Snake : MonoBehaviour
             }
         }
 
-        //Wait for the body pieceto be in the back 
+        //Wait for the body Piece to be in the back
         if (frames % 30 == 0)
         {
             for (int i = 0; i < bodySize - 3; i++)
@@ -117,7 +120,7 @@ public class Snake : MonoBehaviour
                 body[i].tag = "wall";
             }
         }
-        //Position oh the head
+        //Position of the head
         old = gameObject.transform.position;
        
 
