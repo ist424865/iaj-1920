@@ -7,7 +7,7 @@ using MLAgents;
 public class SceneManagerRandom : Academy {
 
     public GameObject apple;
-    public const int APPLE_NUMBER = 5;
+    public const int APPLE_NUMBER = 1;
 
     // Use this for initialization
     void Start () {
