@@ -28,7 +28,8 @@ public class Snake : Agent
 
     //Frame counter
     private long frames = 0;
-
+    
+    //Collision Flag
     private bool collided = false;
 
     private void getApples()
@@ -36,6 +37,8 @@ public class Snake : Agent
         //Get all Apples in the Scene
         var apples = GameObject.FindGameObjectsWithTag("goal");
         appleNum = apples.Length;
+        
+        //Multiple Apples
         if (appleNum > 1)
         {   
             //Choose Random apple to be the goal
@@ -61,7 +64,10 @@ public class Snake : Agent
         controlSignal.z = vectorAction[1];
         
         //Apply Action
-        transform.Translate(controlSignal * Time.deltaTime * speed);
+        //transform.Translate(controlSignal * Time.deltaTime * speed);
+        rigidBody.velocity = controlSignal * speed;
+        rigidBody.angularVelocity = Vector3.zero;
+        this.transform.rotation = Quaternion.identity;
 
         // Rewards
         if (appleNum > 0 && appleGoal != null)
@@ -72,6 +78,16 @@ public class Snake : Agent
             if (distanceToTarget < 1.0f)
             {
                 SetReward(1.0f);
+            }
+
+            if (distanceToTarget < 2.0f)
+            {
+                SetReward(0.5f);
+            }
+
+            if (distanceToTarget < 3.0f)
+            {
+                SetReward(0.33f);
             }
         }
         
@@ -166,7 +182,6 @@ public class Snake : Agent
     {
         getApples();
         rigidBody = GetComponent<Rigidbody>();
-        Application.targetFrameRate = 30;
         body = new GameObject[MAX_BODY];
         speedVector = new Vector3(0.0f, 0.0f, SPEED);
     }
@@ -208,19 +223,20 @@ public class Snake : Agent
         //Every 4 frames update the body(Higher refresh rate will cause bad behaviour)
         if (frames % 4 == 0)
         {
+            //More than one bodypiece
             if (bodySize > 1)
             {
                 for (int i = 0; i < bodySize - 1; i++)
                 {
 
-                    //Move body piece relative to the previous
+                    //Move body piece relative to the next
                     body[i].transform.position = body[i + 1].transform.position;
 
                 }
                 //Move last piece relative to the head
                 body[bodySize - 1].transform.position = old;
             }
-
+            //Only one body piece
             if (bodySize == 1)
             {
                 body[0].transform.position = old;
@@ -228,7 +244,7 @@ public class Snake : Agent
         }
 
         //Wait for the body Piece to be in the back
-        if (frames % 30 == 0)
+        if (frames % 40 == 0)
         {
             for (int i = 0; i < bodySize - 3; i++)
             {
