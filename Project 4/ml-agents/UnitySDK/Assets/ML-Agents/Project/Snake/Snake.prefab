@@ -106,6 +106,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3275a1bde471e9442b575fa27c7f9bb2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  agentParameters:
+    maxStep: 0
+    resetOnDone: 1
+    onDemandDecision: 0
+    numberOfActionsBetweenDecisions: 1
+  BodyParts: []
+  bodyprefab: {fileID: 0}
+  minDistance: 1
+  speed: 1
+  rotationSpeed: 0.5
+  beginSize: 5
+  pointsDisplay: {fileID: 0}
   SPEED: 3
   MAX_BODY: 100
   snake_body: {fileID: 0}

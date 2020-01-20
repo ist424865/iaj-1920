@@ -13,16 +13,16 @@ public class RollerAgent : Agent
     public Transform Target;
     public override void AgentReset()
     {
-        if (this.transform.position.y < 0)
+        if (this.transform.localPosition.y < 0)
         {
             // If the Agent fell, zero its momentum
             this.rBody.angularVelocity = Vector3.zero;
             this.rBody.velocity = Vector3.zero;
-            this.transform.position = new Vector3(0, 0.5f, 0);
+            this.transform.localPosition = new Vector3(0, 0.5f, 0);
         }
 
         // Move the target to a new spot
-        Target.position = new Vector3(Random.value * 8 - 4,
+        Target.localPosition = new Vector3(Random.value * 8 - 4,
                                       0.5f,
                                       Random.value * 8 - 4);
     }
@@ -30,8 +30,8 @@ public class RollerAgent : Agent
     public override void CollectObservations()
     {
         // Target and Agent positions
-        AddVectorObs(Target.position);
-        AddVectorObs(this.transform.position);
+        AddVectorObs(Target.localPosition);
+        AddVectorObs(this.transform.localPosition);
 
         // Agent velocity
         AddVectorObs(rBody.velocity.x);
@@ -48,8 +48,8 @@ public class RollerAgent : Agent
         rBody.AddForce(controlSignal * speed);
 
         // Rewards
-        float distanceToTarget = Vector3.Distance(this.transform.position,
-                                                  Target.position);
+        float distanceToTarget = Vector3.Distance(this.transform.localPosition,
+                                                  Target.localPosition);
 
         // Reached target
         if (distanceToTarget < 1.42f)
@@ -59,7 +59,7 @@ public class RollerAgent : Agent
         }
 
         // Fell off platform
-        if (this.transform.position.y < 0)
+        if (this.transform.localPosition.y < 0)
         {
             Done();
         }
