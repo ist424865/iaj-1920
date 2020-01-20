@@ -9,15 +9,19 @@ public class SceneManagerRandom : Academy {
     public GameObject apple;
     public const int APPLE_NUMBER = 1;
 
-    // Use this for initialization
-    void Start () {
+    // Use for game state initialization
+    private void Awake()
+    {
         for (int i = 0; i < APPLE_NUMBER; i++)
         {
-            var clone = GameObject.Instantiate(apple);
+            var clone = Instantiate(apple);
             clone.tag = "goal";
             clone.transform.position = new Vector3(Random.Range(-7.0f, 7.0f), 0, Random.Range(-7.0f, 7.0f));
         }
+    }
 
+    // Use this for initialization
+    void Start () {
 
     }
 	

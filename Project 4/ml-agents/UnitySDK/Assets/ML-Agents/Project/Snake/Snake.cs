@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using MLAgents;
+using System.Threading;
+using System.Runtime.CompilerServices;
 
 public class Snake : Agent
 {
+    public const float DEFAULT_HEIGHT = 0.0f;
+
     // Snake body list
-    public List<Transform> BodyParts = new List<Transform>();
+    public List<GameObject> BodyParts = new List<GameObject>();
 
     // Snake body part prefab
     public GameObject bodyprefab;
@@ -17,6 +21,10 @@ public class Snake : Agent
     public float rotationSpeed = 0.5f;
     // Number of initial body parts
     public int beginSize = 5;
+
+    // Number of apples
+    public int appleNum = 1;
+
 
     //Display
     public GameObject pointsDisplay;
@@ -37,7 +45,6 @@ public class Snake : Agent
 
     //Selected Apple
     private GameObject appleGoal;
-    private int appleNum;
 
     //Frame counter
     private long frames = 0;
@@ -48,31 +55,28 @@ public class Snake : Agent
     // Start is called before the first frame update
     void Start()
     {
-        getApples();
+        GetApples();
         /*rigidBody = GetComponent<Rigidbody>();
         Application.targetFrameRate = 30;
         body = new GameObject[MAX_BODY];
         speedVector = new Vector3(0.0f, 0.0f, SPEED);*/
-        for (int i = 0; i < beginSize; i++)
-        {
-            AddBodyPart();
-        }
+        CreateSnakeBody();
     }
 
     // Update is called once per frame
     void Update()
     {
 
-        Move();
+        //Move();
 
         if (Input.GetKey(KeyCode.Q))
         {
             AddBodyPart();
         }
-        /*frames++;
-        pointsDisplay.GetComponent<UnityEngine.UI.Text>().text = "Score : " + bodySize;
+        /*frames++;*/
+        //pointsDisplay.GetComponent<UnityEngine.UI.Text>().text = "Score : " + bodySize;
 
-        if (Input.GetKeyDown("w"))
+        /*if (Input.GetKeyDown("w"))
         {
             speedVector = new Vector3(0.0f, 0.0f, SPEED);
 
@@ -138,7 +142,7 @@ public class Snake : Agent
 
 
     // Movement of the snake
-    public void Move()
+    public void Move(float agentAction = 0.0f)
     {
         float currentSpeed = speed;
 
@@ -147,42 +151,54 @@ public class Snake : Agent
             currentSpeed *= 2;
         }
 
-        BodyParts[0].Translate(BodyParts[0].forward * currentSpeed * Time.smoothDeltaTime, Space.World);
+        BodyParts[0].transform.Translate(BodyParts[0].transform.forward * currentSpeed * Time.smoothDeltaTime, Space.World);
 
-        if (Input.GetAxis("Horizontal") != 0)
+        /*if (agentAction == 0)
         {
-            BodyParts[0].Rotate(Vector3.up * rotationSpeed * Input.GetAxis("Horizontal"));
+            if (Input.GetAxis("Horizontal") != 0)
+            {
+                BodyParts[0].Rotate(Vector3.up * rotationSpeed * Input.GetAxis("Horizontal"));
+            }
         }
+        else
+        {
+            
+        }*/
+        BodyParts[0].transform.Rotate(Vector3.up * rotationSpeed * agentAction);
 
         for (int i = 1; i < BodyParts.Count; i++)
         {
             var previousBodyPart = BodyParts[i - 1];
             var currentBodyPart = BodyParts[i];
 
-            float distance = Vector3.Distance(previousBodyPart.position, currentBodyPart.position);
-            Vector3 newPosition = previousBodyPart.position;
+            float distance = Vector3.Distance(previousBodyPart.transform.position, currentBodyPart.transform.position);
+            Vector3 newPosition = previousBodyPart.transform.position;
 
-            newPosition.y = BodyParts[0].position.y;
+            newPosition.y = BodyParts[0].transform.position.y;
 
             float deltaTime = Time.deltaTime * distance / minDistance * currentSpeed;
 
             if (deltaTime > 0.5f)
                 deltaTime = 0.5f;
 
-            currentBodyPart.position = Vector3.Slerp(currentBodyPart.position, newPosition, deltaTime);
-            currentBodyPart.rotation = Quaternion.Slerp(currentBodyPart.rotation, previousBodyPart.rotation, deltaTime);
+            currentBodyPart.transform.position = Vector3.Slerp(currentBodyPart.transform.position, newPosition, deltaTime);
+            currentBodyPart.transform.rotation = Quaternion.Slerp(currentBodyPart.transform.rotation, previousBodyPart.transform.rotation, deltaTime);
         }
+
+        // Update whole snake position and rotation
+        //this.transform.position = BodyParts[0].transform.position;
+        //this.transform.rotation = BodyParts[0].transform.rotation;
     }
 
     // Add new body part to snake
     public void AddBodyPart()
     {
-        Transform newpart = (Instantiate(bodyprefab, BodyParts[BodyParts.Count - 1].position, BodyParts[BodyParts.Count - 1].rotation) as GameObject).transform;
-        newpart.SetParent(transform);
+        GameObject newpart = Instantiate(bodyprefab, BodyParts[BodyParts.Count - 1].transform.position, BodyParts[BodyParts.Count - 1].transform.rotation) as GameObject;
+        newpart.transform.SetParent(transform);
         BodyParts.Add(newpart);
     }
 
-    private void getApples()
+    private void GetApples()
     {
         //Get all Apples in the Scene
         var apples = GameObject.FindGameObjectsWithTag("goal");
@@ -195,10 +211,24 @@ public class Snake : Agent
             appleGoal = apples[index];
         }
         //Choose the only one
-        if (appleNum == 1)
+        else if (appleNum == 1)
         {
             appleGoal = apples[0];
         }
+    }
+
+    public void ResetApples()
+    {
+        // Get all apples in the scene
+        var apples = GameObject.FindGameObjectsWithTag("goal");
+
+        for (int i = 0; i < apples.Length; i++)
+        {
+            // Random position with 0 velocity
+            apples[i].transform.position = new Vector3(Random.Range(-7.0f, 7.0f), DEFAULT_HEIGHT, Random.Range(-7.0f, 7.0f));
+            apples[i].GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
+            apples[i].GetComponent<Rigidbody>().velocity = Vector3.zero;
+        }            
     }
 
 
@@ -212,17 +242,23 @@ public class Snake : Agent
         controlSignal.z = vectorAction[1];
         
         //Apply Action
-        transform.Translate(controlSignal * Time.deltaTime * speed);
+        transform.Translate(controlSignal * Time.deltaTime * speed);*/
+
+        Move(vectorAction[0]);
 
         // Rewards
         if (appleNum > 0 && appleGoal != null)
         {
-            float distanceToTarget = Vector3.Distance(gameObject.transform.position, appleGoal.transform.position);
-            
+            float distanceToTarget = Vector3.Distance(BodyParts[0].transform.position, appleGoal.transform.position);
+
             // Reached Apple
-            if (distanceToTarget < 1.0f)
+            Debug.Log(distanceToTarget);
+            if (distanceToTarget < 0.75f)
             {
                 SetReward(1.0f);
+                ResetApples();
+                AddBodyPart();
+                Done();
             }
         }
         
@@ -230,7 +266,13 @@ public class Snake : Agent
         if (collided)
         {
             Done();
-        }*/
+        }
+
+        // Fell off platform
+        if (BodyParts[0].transform.position.y < 0)
+        {
+            Done();
+        }
 
     }
 
@@ -239,26 +281,16 @@ public class Snake : Agent
 
     public override void AgentReset()
     {
-
-        /*//destroy body of the snake
-        foreach (GameObject piece in body)
+        if (BodyParts[0].transform.position.y < 0)
         {
-            Destroy(piece);
+            DestroySnakeBody();
+            CreateSnakeBody();
         }
 
-        //get new goal
-            getApples();
+        GetApples();
 
-
-        //reset snake head at (0,0,0)
-        this.transform.position = new Vector3(0, 0.12f, 0);
-        this.transform.rotation = Quaternion.identity;
-        this.rigidBody.angularVelocity = Vector3.zero;
-        this.rigidBody.velocity = Vector3.zero;
-        bodySize = 0;
-        body = new GameObject[MAX_BODY];
-
-        collided = false; */
+        // Reset snake head position to center
+        collided = false;
     }
 
 
@@ -285,7 +317,7 @@ public class Snake : Agent
     void OnCollisionEnter(Collision collision)
     {
         // Snake dies if hits a Wall 
-        if (collision.collider.CompareTag("wall"))
+        /*if (collision.collider.CompareTag("wall"))
         {
             collided = true;
         }
@@ -293,17 +325,42 @@ public class Snake : Agent
         // Snake eats an Apple
         else if (collision.collider.CompareTag("goal"))
         {
+            SetReward(1.0f);
+            AddBodyPart();
+            Done();
+            Debug.Log("HERE!");
+        }*/
+    }
+
+    // Destroy snake body
+    public void DestroySnakeBody()
+    {
+        // Destroy everything except the head
+        for (int i = BodyParts.Count - 1; i > 0; i--)
+        {
+            Destroy(BodyParts[i]);
+            BodyParts.RemoveAt(i);
+        }
+
+
+        // Reset head position
+        BodyParts[0].transform.position = new Vector3(0, 0.25f, 0);
+    }
+
+    // Create snake body
+    public void CreateSnakeBody()
+    {
+        // Create new snake
+        for (int i = 0; i < beginSize; i++)
+        {
             AddBodyPart();
         }
     }
 
-
-
     public override float[] Heuristic()
     {
-        var action = new float[2];
-        action[0] = 0;//Input.GetAxis("Horizontal");
-        action[1] = 0;//Input.GetAxis("Vertical");
+        var action = new float[1];
+        action[0] = Input.GetAxis("Horizontal");
 
         return action;
     }
