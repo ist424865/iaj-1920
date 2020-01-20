@@ -24,7 +24,7 @@ public class Snake : Agent
 
     //Display
     public GameObject pointsDisplay;
-   
+
     //Speed Variables
     public int SPEED = 3;
     private Vector3 speedVector;
@@ -160,7 +160,7 @@ public class Snake : Agent
 
         for (int i = 1; i < BodyParts.Count; i++)
         {
-            var previousBodyPart = BodyParts[i-1];
+            var previousBodyPart = BodyParts[i - 1];
             var currentBodyPart = BodyParts[i];
 
             float distance = Vector3.Distance(previousBodyPart.position, currentBodyPart.position);
@@ -192,7 +192,7 @@ public class Snake : Agent
         var apples = GameObject.FindGameObjectsWithTag("goal");
         appleNum = apples.Length;
         if (appleNum > 1)
-        {   
+        {
             //Choose Random apple to be the goal
             System.Random rnd = new System.Random();
             int index = rnd.Next(0, apples.Length);
@@ -243,7 +243,7 @@ public class Snake : Agent
 
     public override void AgentReset()
     {
- 
+
         /*//destroy body of the snake
         foreach (GameObject piece in body)
         {
@@ -312,9 +312,9 @@ public class Snake : Agent
         return action;
     }
 
-   
 
-    
 
-    
+
+
+
 }
