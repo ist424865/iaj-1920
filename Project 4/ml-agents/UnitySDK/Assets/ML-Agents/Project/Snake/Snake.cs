@@ -18,10 +18,6 @@ public class Snake : Agent
     // Number of initial body parts
     public int beginSize = 5;
 
-
-
-
-
     //Display
     public GameObject pointsDisplay;
 
